@@ -17,7 +17,7 @@ const PLAYER_SPEED=320;
 const STAR_SPEED=165;
 const STAR_INTERVAL=700;
 const PLAYER_EDGE_MARGIN=8;
-const ASSET_VERSION="20260830-1015";
+const ASSET_VERSION="20260830-1025";
 const PLAYER_IMAGES={
   front:`IMG_1796.png?v=${ASSET_VERSION}`,
   right:`IMG_1792.png?v=${ASSET_VERSION}`,
@@ -218,6 +218,23 @@ function addHoldControls(button,direction){
 
 addHoldControls(leftButton,"left");
 addHoldControls(rightButton,"right");
+
+// iPhone Safariのダブルタップ拡大をゲーム画面では無効化する。
+game.addEventListener("dblclick",event=>event.preventDefault());
+let lastTouchEnd=0;
+game.addEventListener("touchend",event=>{
+  const now=Date.now();
+  if(now-lastTouchEnd<350){
+    event.preventDefault();
+  }
+  lastTouchEnd=now;
+},{passive:false});
+
+[game,playArea,player].forEach(element=>{
+  ["contextmenu","selectstart","dragstart"].forEach(type=>{
+    element.addEventListener(type,event=>event.preventDefault());
+  });
+});
 
 window.addEventListener("resize",()=>{
   clampPlayerX();
