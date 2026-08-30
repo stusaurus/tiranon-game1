@@ -17,7 +17,7 @@ const PLAYER_SPEED=320;
 const STAR_SPEED=165;
 const STAR_INTERVAL=700;
 const PLAYER_EDGE_MARGIN=8;
-const ASSET_VERSION="20260830-1005";
+const ASSET_VERSION="20260830-1015";
 const PLAYER_IMAGES={
   front:`IMG_1796.png?v=${ASSET_VERSION}`,
   right:`IMG_1792.png?v=${ASSET_VERSION}`,
@@ -42,12 +42,19 @@ function setPlayerImage(direction){
   const nextDirection=PLAYER_IMAGES[direction]?direction:"front";
   if(currentDirection===nextDirection && playerSprite.getAttribute("src")) return;
   currentDirection=nextDirection;
-  player.classList.remove("is-fallback");
+  player.classList.remove("image-error");
   playerSprite.setAttribute("src",PLAYER_IMAGES[nextDirection]);
 }
 
-playerSprite.addEventListener("load",()=>player.classList.remove("is-fallback"));
-playerSprite.addEventListener("error",()=>player.classList.add("is-fallback"));
+playerSprite.addEventListener("load",()=>player.classList.remove("image-error"));
+playerSprite.addEventListener("error",()=>{
+  if(currentDirection!=="front"){
+    currentDirection="front";
+    playerSprite.setAttribute("src",PLAYER_IMAGES.front);
+  }else{
+    player.classList.add("image-error");
+  }
+});
 
 function playerMaxX(){
   return Math.max(PLAYER_EDGE_MARGIN,playArea.clientWidth-player.offsetWidth-PLAYER_EDGE_MARGIN);
@@ -189,6 +196,9 @@ window.addEventListener("blur",()=>{
 });
 
 function addHoldControls(button,direction){
+  ["contextmenu","selectstart","dragstart"].forEach(type=>{
+    button.addEventListener(type,event=>event.preventDefault());
+  });
   button.addEventListener("pointerdown",event=>{
     event.preventDefault();
     if(button.setPointerCapture)button.setPointerCapture(event.pointerId);
