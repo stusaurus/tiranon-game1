@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tiranon Adventure</title>
-  <link rel="stylesheet" href="style.css?v=20260830-1025">
+  <link rel="stylesheet" href="style.css?v=20260830-1035">
 </head>
 <body>
   <main id="game" class="game" aria-label="Tiranon Adventureのゲーム画面">
@@ -25,8 +25,22 @@
     </div>
 
     <nav class="controls" aria-label="移動操作">
-      <button id="left-button" class="control-button control-button--left" type="button" aria-label="左へ移動"></button>
-      <button id="right-button" class="control-button control-button--right" type="button" aria-label="右へ移動"></button>
+      <button id="left-button" class="control-button control-button--left" type="button" aria-label="左へ移動">
+        <span class="footprint footprint--left" aria-hidden="true">
+          <span class="footprint__toe footprint__toe--one"></span>
+          <span class="footprint__toe footprint__toe--two"></span>
+          <span class="footprint__toe footprint__toe--three"></span>
+          <span class="footprint__pad"></span>
+        </span>
+      </button>
+      <button id="right-button" class="control-button control-button--right" type="button" aria-label="右へ移動">
+        <span class="footprint footprint--right" aria-hidden="true">
+          <span class="footprint__toe footprint__toe--one"></span>
+          <span class="footprint__toe footprint__toe--two"></span>
+          <span class="footprint__toe footprint__toe--three"></span>
+          <span class="footprint__pad"></span>
+        </span>
+      </button>
     </nav>
 
     <section id="game-over" class="game-over" aria-live="polite" hidden>
