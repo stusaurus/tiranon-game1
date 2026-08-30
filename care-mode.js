@@ -218,7 +218,7 @@ function renderToyPanel(){
     const button=document.createElement("button");
     button.className="care-item-card";
     button.disabled=!unlocked;
-    button.innerHTML=`<img loading="lazy" src="${toy.image}" alt=""><div><strong>${toy.name}</strong><small>${unlocked?`😊 +${toy.mood}`:`Lv.${toy.level}で解放`}</small><span>${unlocked?"あそぶ":"🔒"}</span></div>`;
+    button.innerHTML=`<img loading="lazy" src="${toy.image}" alt=""><div><strong>${toy.name}</strong><small>${unlocked?`😊 +${toy.mood}　🍖 -6`:`Lv.${toy.level}で解放`}</small><span>${unlocked?"あそぶ":"🔒"}</span></div>`;
     if(unlocked)button.addEventListener("click",()=>playWithToy(key,toy));
     carePanelItems.appendChild(button);
   }
@@ -231,7 +231,7 @@ function playWithToy(key,toy){
   careState.lastPlayAt=now;
   careState.lastToy=key;
   careState.mood+=toy.mood;
-  careState.hunger-=2;
+  careState.hunger-=6;
   careState.moodAt=now;
   clampCare();
   saveCareState();
