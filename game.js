@@ -6,6 +6,7 @@ const player=document.getElementById("player");
 const playerSprite=document.getElementById("player-sprite");
 const scoreDisplay=document.getElementById("score");
 const timeDisplay=document.getElementById("time");
+const comboDisplay=document.getElementById("combo");
 const gameOverScreen=document.getElementById("game-over");
 const finalScoreDisplay=document.getElementById("final-score");
 const restartButton=document.getElementById("restart-button");
@@ -19,13 +20,17 @@ const GAME_TIME=30;
 const PLAYER_SPEED=320;
 const STAR_SPEED=165;
 const STAR_INTERVAL=700;
+const GOLD_STAR_CHANCE=.14;
+const GOLD_STAR_POINTS=3;
+const COMBO_WINDOW=1800;
+const MAX_COMBO_MULTIPLIER=5;
 const ROCK_SPEED=205;
 const ROCK_INTERVAL=2200;
 const JUMP_VELOCITY=580;
 const JUMP_GRAVITY=1500;
 const PLAYER_EDGE_MARGIN=8;
 const STAR_CONTROL_CLEARANCE=14;
-const ASSET_VERSION="20260830-v3";
+const ASSET_VERSION="20260830-v7";
 const PLAYER_IMAGES={
   normal:{
     front:`IMG_1796.png?v=${ASSET_VERSION}`,
@@ -42,6 +47,8 @@ const PLAYER_IMAGES={
 Object.values(PLAYER_IMAGES).flatMap(group=>Object.values(group)).forEach(src=>{const img=new Image();img.src=src;});
 
 let score=0;
+let comboCount=0;
+let comboExpiresAt=0;
 let timeLeft=GAME_TIME;
 let playerX=0;
 let movingLeft=false;
@@ -57,6 +64,7 @@ let jumpHeight=0;
 let jumpVelocity=0;
 let isJumping=false;
 let invincibleUntil=0;
+let feverTimerId=0;
 
 function requestedDirection(){
   if(movingLeft&&!movingRight)return "left";
@@ -120,13 +128,54 @@ function updateJump(dt){
   }
 }
 
+function resetCombo(){
+  comboCount=0;
+  comboExpiresAt=0;
+  if(comboDisplay){
+    comboDisplay.hidden=true;
+    comboDisplay.textContent="";
+  }
+}
+
+function refreshCombo(now){
+  if(comboCount>0&&now>comboExpiresAt)resetCombo();
+}
+
+function showCombo(){
+  if(!comboDisplay)return;
+  if(comboCount<2){
+    comboDisplay.hidden=true;
+    comboDisplay.textContent="";
+    return;
+  }
+  comboDisplay.textContent=`COMBO ×${Math.min(comboCount,MAX_COMBO_MULTIPLIER)}`;
+  comboDisplay.hidden=false;
+  comboDisplay.classList.remove("combo-pop");
+  void comboDisplay.offsetWidth;
+  comboDisplay.classList.add("combo-pop");
+}
+
+function triggerFever(){
+  clearTimeout(feverTimerId);
+  game.classList.add("fever-active");
+  const fever=document.createElement("div");
+  fever.className="fever-popup";
+  fever.textContent="FEVER!";
+  fever.setAttribute("aria-hidden","true");
+  playArea.appendChild(fever);
+  setTimeout(()=>fever.remove(),900);
+  feverTimerId=setTimeout(()=>game.classList.remove("fever-active"),1000);
+}
+
 function createStar(){
   if(!isPlaying)return;
   const star=document.createElement("div");
-  star.className="star";
+  const isGold=Math.random()<GOLD_STAR_CHANCE;
+  star.className=isGold?"star star--gold":"star";
   star.textContent="★";
+  star.dataset.type=isGold?"gold":"normal";
   star.setAttribute("aria-hidden","true");
-  const maximumX=Math.max(0,playArea.clientWidth-34);
+  const maximumX=Math.max(0,playArea.clientWidth-38);
   star.dataset.x=String(Math.random()*maximumX);
   star.dataset.y="0";
   star.style.transform=`translate(${star.dataset.x}px, 0px)`;
@@ -151,10 +200,10 @@ function rectanglesOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.b
 function expandedRect(element,margin){const r=element.getBoundingClientRect();return{left:r.left-margin,right:r.right+margin,top:r.top-margin,bottom:r.bottom+margin};}
 function insetRect(rect,horizontal,vertical){return{left:rect.left+horizontal,right:rect.right-horizontal,top:rect.top+vertical,bottom:rect.bottom-vertical};}
 
-function showPointPopup(star){
+function showPointPopup(star,points){
   const popup=document.createElement("div");
-  popup.className="point-popup";
-  popup.textContent="+1";
+  popup.className=star.dataset.type==="gold"?"point-popup point-popup--gold":"point-popup";
+  popup.textContent=`+${points}`;
   popup.style.left=`${Number(star.dataset.x)}px`;
   popup.style.top=`${Number(star.dataset.y)}px`;
   playArea.appendChild(popup);
@@ -173,7 +222,22 @@ function showDamagePopup(){
   setTimeout(()=>popup.remove(),700);
 }
 
-function updateStars(dt){
+function collectStar(star,now){
+  if(comboCount>0&&now<=comboExpiresAt)comboCount++;
+  else comboCount=1;
+  comboExpiresAt=now+COMBO_WINDOW;
+
+  const basePoints=star.dataset.type==="gold"?GOLD_STAR_POINTS:1;
+  const multiplier=Math.min(comboCount,MAX_COMBO_MULTIPLIER);
+  const earned=basePoints*multiplier;
+  score+=earned;
+  scoreDisplay.textContent=`SCORE ${score}`;
+  showPointPopup(star,earned);
+  showCombo();
+  if(comboCount===5)triggerFever();
+}
+
+function updateStars(dt,currentTime){
   const playerRect=player.getBoundingClientRect();
   const controlsVisible=controls&&getComputedStyle(controls).display!=="none";
   const controlSafeRects=controlsVisible?controlButtons.map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE)):[];
@@ -183,9 +247,7 @@ function updateStars(dt){
     star.style.transform=`translate(${star.dataset.x}px, ${nextY}px)`;
     const starRect=star.getBoundingClientRect();
     if(rectanglesOverlap(playerRect,starRect)){
-      score++;
-      scoreDisplay.textContent=`SCORE ${score}`;
-      showPointPopup(star);
+      collectStar(star,currentTime);
       star.remove();
       return;
     }
@@ -209,6 +271,7 @@ function updateRocks(dt,currentTime){
     if(currentTime>=invincibleUntil&&rectanglesOverlap(playerHitbox,rockRect)){
       score=Math.max(0,score-1);
       scoreDisplay.textContent=`SCORE ${score}`;
+      resetCombo();
       showDamagePopup();
       invincibleUntil=currentTime+900;
       player.classList.add("is-hit");
@@ -233,7 +296,8 @@ function gameLoop(currentTime){
   updateJump(dt);
   refreshPlayerDirection();
   drawPlayer();
-  updateStars(dt);
+  refreshCombo(currentTime);
+  updateStars(dt,currentTime);
   updateRocks(dt,currentTime);
   animationId=requestAnimationFrame(gameLoop);
 }
@@ -246,6 +310,8 @@ function endGame(){
   jumpHeight=0;
   jumpVelocity=0;
   player.classList.remove("is-jumping");
+  game.classList.remove("fever-active");
+  clearTimeout(feverTimerId);
   currentSpriteKey="";
   setPlayerImage("front");
   drawPlayer();
@@ -253,6 +319,7 @@ function endGame(){
   clearInterval(timerId);
   clearInterval(starTimerId);
   clearInterval(rockTimerId);
+  resetCombo();
   finalScoreDisplay.textContent=`最終スコア ${score}`;
   gameOverScreen.hidden=false;
 }
@@ -262,12 +329,15 @@ function startGame(){
   clearInterval(timerId);
   clearInterval(starTimerId);
   clearInterval(rockTimerId);
-  playArea.querySelectorAll(".star, .rock, .point-popup, .damage-popup").forEach(item=>item.remove());
+  clearTimeout(feverTimerId);
+  playArea.querySelectorAll(".star, .rock, .point-popup, .damage-popup, .fever-popup").forEach(item=>item.remove());
   score=0;
   timeLeft=GAME_TIME;
   movingLeft=false;
   movingRight=false;
   invincibleUntil=0;
+  resetCombo();
+  game.classList.remove("fever-active");
   player.classList.remove("is-hit","is-jumping");
   scoreDisplay.textContent="SCORE 0";
   timeDisplay.textContent=`TIME ${GAME_TIME}`;
