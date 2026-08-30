@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tiranon Adventure</title>
-  <link rel="stylesheet" href="style.css?v=20260830-v9">
-  <link rel="stylesheet" href="jump-fix.css?v=20260830-v9">
-  <link rel="stylesheet" href="combo.css?v=20260830-v9">
+  <link rel="stylesheet" href="style.css?v=20260830-v10">
+  <link rel="stylesheet" href="jump-fix.css?v=20260830-v10">
+  <link rel="stylesheet" href="combo.css?v=20260830-v10">
+  <link rel="stylesheet" href="result.css?v=20260830-v10">
 </head>
 <body>
   <main id="game" class="game" aria-label="Tiranon Adventureのゲーム画面">
@@ -24,7 +25,7 @@
 
     <div id="play-area" class="play-area">
       <div id="player" class="player" role="img" aria-label="ティラノン">
-        <img id="player-sprite" class="player__sprite" src="IMG_1796.png?v=20260830-v9" width="126" height="126" alt="" draggable="false">
+        <img id="player-sprite" class="player__sprite" src="IMG_1796.png?v=20260830-v10" width="126" height="126" alt="" draggable="false">
       </div>
     </div>
 
@@ -50,15 +51,32 @@
       </button>
     </nav>
 
-    <section id="game-over" class="game-over" aria-live="polite" hidden>
-      <h2>ゲーム終了！</h2>
-      <p id="final-score">最終スコア 0</p>
-      <button id="restart-button" type="button">もう一度遊ぶ</button>
+    <section id="game-over" class="game-over result-screen" aria-live="polite" hidden>
+      <div class="result-card">
+        <p class="result-label">RESULT</p>
+        <div id="result-rank" class="result-rank" aria-label="ランクC">C</div>
+        <p id="rank-message" class="rank-message">ナイスチャレンジ！</p>
+
+        <div class="result-scores">
+          <div class="result-score-row">
+            <span>今回のスコア</span>
+            <strong id="final-score">0</strong>
+          </div>
+          <div class="result-score-row result-score-row--best">
+            <span>BEST SCORE</span>
+            <strong id="best-score">0</strong>
+          </div>
+        </div>
+
+        <p id="new-best" class="new-best" hidden>NEW BEST!</p>
+        <button id="restart-button" class="restart-button" type="button">もう一度遊ぶ</button>
+      </div>
     </section>
   </main>
 
-  <script src="game.js?v=20260830-v9"></script>
-  <script src="jump-overrides.js?v=20260830-v9"></script>
-  <script src="fever-mode.js?v=20260830-v9"></script>
+  <script src="game.js?v=20260830-v10"></script>
+  <script src="jump-overrides.js?v=20260830-v10"></script>
+  <script src="fever-mode.js?v=20260830-v10"></script>
+  <script src="result-screen.js?v=20260830-v10"></script>
 </body>
 </html>
