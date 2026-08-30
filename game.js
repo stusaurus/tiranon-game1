@@ -9,6 +9,7 @@ const timeDisplay=document.getElementById("time");
 const gameOverScreen=document.getElementById("game-over");
 const finalScoreDisplay=document.getElementById("final-score");
 const restartButton=document.getElementById("restart-button");
+const controls=document.querySelector(".controls");
 const leftButton=document.getElementById("left-button");
 const rightButton=document.getElementById("right-button");
 
@@ -17,7 +18,8 @@ const PLAYER_SPEED=320;
 const STAR_SPEED=165;
 const STAR_INTERVAL=700;
 const PLAYER_EDGE_MARGIN=8;
-const ASSET_VERSION="20260830-1025";
+const STAR_CONTROL_CLEARANCE=14;
+const ASSET_VERSION="20260830-1032";
 const PLAYER_IMAGES={
   front:`IMG_1796.png?v=${ASSET_VERSION}`,
   right:`IMG_1792.png?v=${ASSET_VERSION}`,
@@ -92,6 +94,16 @@ function createStar(){
 
 function rectanglesOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;}
 
+function expandedRect(element,margin){
+  const rect=element.getBoundingClientRect();
+  return {
+    left:rect.left-margin,
+    right:rect.right+margin,
+    top:rect.top-margin,
+    bottom:rect.bottom+margin
+  };
+}
+
 function showPointPopup(star){
   const popup=document.createElement("div");
   popup.className="point-popup";
@@ -104,11 +116,17 @@ function showPointPopup(star){
 
 function updateStars(dt){
   const playerRect=player.getBoundingClientRect();
+  const controlsVisible=controls&&getComputedStyle(controls).display!=="none";
+  const controlSafeRects=controlsVisible
+    ? [leftButton,rightButton].map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE))
+    : [];
+
   playArea.querySelectorAll(".star").forEach(star=>{
     const nextY=Number(star.dataset.y)+STAR_SPEED*dt;
     star.dataset.y=String(nextY);
     star.style.transform=`translate(${star.dataset.x}px, ${nextY}px)`;
     const starRect=star.getBoundingClientRect();
+
     if(rectanglesOverlap(playerRect,starRect)){
       score++;
       scoreDisplay.textContent=`SCORE ${score}`;
@@ -116,6 +134,12 @@ function updateStars(dt){
       star.remove();
       return;
     }
+
+    if(controlSafeRects.some(rect=>rectanglesOverlap(starRect,rect))){
+      star.remove();
+      return;
+    }
+
     if(starRect.top>=game.getBoundingClientRect().bottom)star.remove();
   });
 }
