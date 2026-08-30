@@ -1,0 +1,81 @@
+.combo-display {
+  position:absolute;
+  top:92px;
+  left:50%;
+  z-index:12;
+  min-width:128px;
+  padding:7px 14px;
+  border:2px solid rgba(255,255,255,.86);
+  border-radius:999px;
+  color:#fff8c9;
+  background:rgba(21,76,85,.68);
+  box-shadow:0 4px 10px rgba(0,0,0,.16);
+  font-size:clamp(18px,4.5vw,28px);
+  font-weight:900;
+  line-height:1;
+  text-align:center;
+  text-shadow:0 2px 2px rgba(70,55,0,.35);
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+.combo-display[hidden] { display:none; }
+.combo-display.combo-pop { animation:combo-pop .24s ease-out; }
+@keyframes combo-pop {
+  0% { transform:translateX(-50%) scale(.72); opacity:.45; }
+  70% { transform:translateX(-50%) scale(1.12); }
+  100% { transform:translateX(-50%) scale(1); opacity:1; }
+}
+
+.star--gold {
+  width:38px;
+  height:38px;
+  font-size:38px;
+  line-height:38px;
+  color:#fff5a0;
+  text-shadow:0 2px 0 #e79700,0 0 7px #fff,0 0 14px #ffe76a;
+  animation:gold-star-pulse .6s ease-in-out infinite alternate;
+}
+@keyframes gold-star-pulse {
+  from { filter:brightness(1); }
+  to { filter:brightness(1.28) drop-shadow(0 0 5px rgba(255,241,104,.8)); }
+}
+.point-popup--gold {
+  color:#fff1a6;
+  text-shadow:0 2px 2px #a66a00,0 0 7px #fff;
+  font-size:31px;
+}
+
+.fever-popup {
+  position:absolute;
+  top:42%;
+  left:50%;
+  z-index:20;
+  color:#fffbd0;
+  font-size:clamp(42px,11vw,72px);
+  font-weight:1000;
+  letter-spacing:.04em;
+  text-shadow:0 3px 0 #e37e00,0 0 12px #fff,0 0 24px #ffe84f;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  animation:fever-pop .9s ease-out forwards;
+}
+@keyframes fever-pop {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(.5) rotate(-7deg); }
+  35% { opacity:1; transform:translate(-50%,-50%) scale(1.18) rotate(3deg); }
+  68% { transform:translate(-50%,-50%) scale(.98) rotate(0); }
+  100% { opacity:0; transform:translate(-50%,-58%) scale(1.05); }
+}
+.fever-active::after {
+  position:absolute;
+  inset:0;
+  z-index:4;
+  content:"";
+  pointer-events:none;
+  background:radial-gradient(circle at center,rgba(255,250,151,.16),rgba(255,224,53,.05) 45%,transparent 70%);
+  animation:fever-flash .22s ease-in-out 4 alternate;
+}
+@keyframes fever-flash { from { opacity:.25; } to { opacity:1; } }
+
+@media (max-width:520px) {
+  .combo-display { top:88px; }
+}
