@@ -10,6 +10,13 @@ let jumpCarryDirection="front";
 let jumpCarryStartedAt=0;
 let controlsPlusPreviousTime=performance.now();
 
+function clearJumpCarryMemory(){
+  recentHorizontalDirection="front";
+  recentHorizontalAt=0;
+  jumpCarryDirection="front";
+  jumpCarryStartedAt=0;
+}
+
 function rememberHorizontalDirection(direction){
   if(direction!=="left"&&direction!=="right")return;
   recentHorizontalDirection=direction;
@@ -47,6 +54,16 @@ jump=function(){
   }
 };
 
+/* 着地したフレームで横慣性と直前方向を完全に消す。 */
+const updateJumpBeforeControlsPlus=updateJump;
+updateJump=function(dt){
+  const wasJumping=isJumping;
+  updateJumpBeforeControlsPlus(dt);
+  if(wasJumping&&!isJumping){
+    clearJumpCarryMemory();
+  }
+};
+
 const gameLoopBeforeControlsPlus=gameLoop;
 gameLoop=function(currentTime){
   const dt=Math.min(Math.max(0,(currentTime-controlsPlusPreviousTime)/1000),.05);
@@ -68,8 +85,6 @@ gameLoop=function(currentTime){
       jumpCarryDirection=liveDirection;
       rememberHorizontalDirection(liveDirection);
     }
-  }else{
-    jumpCarryDirection="front";
   }
 
   gameLoopBeforeControlsPlus(currentTime);
@@ -77,10 +92,7 @@ gameLoop=function(currentTime){
 
 const resetPlayerPositionBeforeControlsPlus=resetPlayerPosition;
 resetPlayerPosition=function(){
-  recentHorizontalDirection="front";
-  recentHorizontalAt=0;
-  jumpCarryDirection="front";
-  jumpCarryStartedAt=0;
+  clearJumpCarryMemory();
   controlsPlusPreviousTime=performance.now();
   resetPlayerPositionBeforeControlsPlus();
 };
