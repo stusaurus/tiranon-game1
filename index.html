@@ -11,26 +11,31 @@
     <div class="cloud cloud--one" aria-hidden="true"></div>
     <div class="cloud cloud--two" aria-hidden="true"></div>
     <div class="cloud cloud--three" aria-hidden="true"></div>
+
     <header class="status">
       <p id="score">SCORE 0</p>
       <h1>Tiranon Adventure</h1>
       <p id="time">TIME 30</p>
     </header>
+
     <div id="play-area" class="play-area">
-      <div id="player" class="player" role="img" aria-label="ティラノン">
-        <img class="player__sprite" src="assets/tiranon-idle.svg" alt="" draggable="false">
+      <div id="player" class="player" role="img" aria-label="ティラノン（仮キャラクター）">
+        <span class="player__placeholder" aria-hidden="true">🦖</span>
       </div>
     </div>
+
     <nav class="controls" aria-label="移動操作">
       <button id="left-button" type="button" aria-label="左へ移動">←</button>
       <button id="right-button" type="button" aria-label="右へ移動">→</button>
     </nav>
+
     <section id="game-over" class="game-over" aria-live="polite" hidden>
       <h2>ゲーム終了！</h2>
       <p id="final-score">最終スコア 0</p>
       <button id="restart-button" type="button">もう一度遊ぶ</button>
     </section>
   </main>
+
   <script src="game.js"></script>
 </body>
 </html>
