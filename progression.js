@@ -40,8 +40,9 @@ function saveProgressionState(){
 function itemLevel(type){return progressionState.levels[type]||1;}
 function magnetDurationForLevel(level){return 5000+(level-1)*1000;}
 function doubleDurationForLevel(level){return level===5?10000:5000+(level-1)*1000;}
-function shieldChargesForLevel(level){return level>=5?3:level>=3?2:1;}
-function clockSecondsForLevel(level){return [3,3,4,4,5][Math.max(1,Math.min(5,level))-1];}
+function shieldChargesForLevel(){return 1;}
+function shieldBlockBonusForLevel(level){return [0,2,4,6,10][Math.max(1,Math.min(5,level))-1];}
+function clockSecondsForLevel(level){return [3,4,5,6,7][Math.max(1,Math.min(5,level))-1];}
 
 const coinHud=document.createElement("div");
 coinHud.className="coin-hud";
@@ -89,9 +90,14 @@ const shopItems=shopPanel.querySelector("#shop-items");
 const shopWallet=shopPanel.querySelector("#shop-wallet");
 const shopClose=shopPanel.querySelector(".shop-close");
 
+function shieldEffectText(level){
+  const bonus=shieldBlockBonusForLevel(level);
+  return bonus>0?`岩を1回防ぐ・+${bonus}点`:`岩を1回防ぐ`;
+}
+
 const SHOP_DEFS={
   magnet:{icon:"🧲",name:"マグネット",effect(level){return `効果 ${magnetDurationForLevel(level)/1000}秒`; }},
-  shield:{icon:"🛡️",name:"シールド",effect(level){return `岩を ${shieldChargesForLevel(level)}回 防ぐ`; }},
+  shield:{icon:"🛡️",name:"シールド",effect(level){return shieldEffectText(level); }},
   clock:{icon:"⏰",name:"時計",effect(level){return `TIME +${clockSecondsForLevel(level)}秒`; }},
   double:{icon:"×2",name:"スコア2倍",effect(level){return `効果 ${doubleDurationForLevel(level)/1000}秒`; }}
 };
@@ -109,7 +115,7 @@ function renderShop(){
     const cost=maxed?0:UPGRADE_COSTS[level-1];
     const row=document.createElement("article");
     row.className="shop-item";
-    const nextText=maxed?"MAX":`${def.effect(level)} → ${def.effect(level+1)}`;
+    const nextText=maxed?`${def.effect(level)}・MAX`:`${def.effect(level)} → ${def.effect(level+1)}`;
     row.innerHTML=`
       <div class="shop-item__icon">${def.icon}</div>
       <div class="shop-item__body">
@@ -165,7 +171,7 @@ function scheduleNextCoin(){
   },delay);
 }
 
-function showCoinPopup(coin){
+function showCoinPopup(){
   const popup=document.createElement("div");
   popup.className="coin-popup";
   popup.textContent=`+${COIN_VALUE} 🪙`;
@@ -190,7 +196,7 @@ function updateCoins(dt){
     if(rectanglesOverlap(playerRect,rect)){
       roundCoins+=COIN_VALUE;
       updateCoinHud();
-      showCoinPopup(coin);
+      showCoinPopup();
       coin.remove();
       return;
     }
@@ -244,6 +250,25 @@ collectItem=function(item,currentTime){
     doubleUntil=currentTime+doubleDurationForLevel(level);
   }
   renderItemStatus(currentTime);
+};
+
+const showShieldBlockPopupBeforeProgression=showShieldBlockPopup;
+showShieldBlockPopup=function(){
+  const bonus=shieldBlockBonusForLevel(itemLevel("shield"));
+  if(bonus>0){
+    score+=bonus;
+    scoreDisplay.textContent=`SCORE ${score}`;
+    const popup=document.createElement("div");
+    popup.className="coin-popup shield-bonus-popup";
+    popup.textContent=`SHIELD +${bonus}`;
+    const rect=player.getBoundingClientRect();
+    const areaRect=playArea.getBoundingClientRect();
+    popup.style.left=`${rect.left-areaRect.left+rect.width/2}px`;
+    popup.style.top=`${Math.max(86,rect.top-areaRect.top-8)}px`;
+    playArea.appendChild(popup);
+    setTimeout(()=>popup.remove(),700);
+  }
+  showShieldBlockPopupBeforeProgression();
 };
 
 const endGameBeforeProgression=endGame;
