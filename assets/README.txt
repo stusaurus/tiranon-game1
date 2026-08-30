@@ -1,0 +1,1 @@
+Character assets live in this folder.
