@@ -12,14 +12,36 @@
   pointer-events:auto;
 }
 
+/* Pin the three controls to fixed positions so Safari layout changes cannot
+   push the right button out of view during play. */
+.controls {
+  height:92px;
+  padding:0;
+}
+.controls .control-button--left,
+.controls .jump-button,
+.controls .control-button--right {
+  position:absolute;
+  bottom:0;
+  margin:0;
+}
+.controls .control-button--left { left:22px; }
+.controls .jump-button { left:50%; transform:translateX(-50%); }
+.controls .control-button--right { right:22px; }
+.controls .jump-button:active { transform:translateX(-50%) translateY(5px); }
+
 @media (max-width:520px) {
   .controls {
-    padding-right:22px;
-    padding-left:22px;
+    right:0;
     bottom:20px;
+    left:0;
+    height:96px;
   }
 
   .control-button::after {
     inset:-20px;
   }
+
+  .controls .control-button--left { left:20px; }
+  .controls .control-button--right { right:20px; }
 }
