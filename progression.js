@@ -40,7 +40,7 @@ function saveProgressionState(){
 function itemLevel(type){return progressionState.levels[type]||1;}
 function magnetDurationForLevel(level){return 5000+(level-1)*1000;}
 function doubleDurationForLevel(level){return level===5?10000:5000+(level-1)*1000;}
-function shieldChargesForLevel(){return 1;}
+function shieldChargesForLevel(level){return [1,1,2,2,3][Math.max(1,Math.min(5,level))-1];}
 function shieldBlockBonusForLevel(level){return [0,2,4,6,10][Math.max(1,Math.min(5,level))-1];}
 function clockSecondsForLevel(level){return [3,4,5,6,7][Math.max(1,Math.min(5,level))-1];}
 
@@ -91,8 +91,9 @@ const shopWallet=shopPanel.querySelector("#shop-wallet");
 const shopClose=shopPanel.querySelector(".shop-close");
 
 function shieldEffectText(level){
+  const charges=shieldChargesForLevel(level);
   const bonus=shieldBlockBonusForLevel(level);
-  return bonus>0?`岩を1回防ぐ・+${bonus}点`:`岩を1回防ぐ`;
+  return bonus>0?`岩を${charges}回防ぐ・1回ごとに+${bonus}点`:`岩を${charges}回防ぐ`;
 }
 
 const SHOP_DEFS={
