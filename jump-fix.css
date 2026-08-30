@@ -1,5 +1,8 @@
 .player.is-jumping .player__sprite {
-  clip-path: none;
+  /* The uploaded jump PNGs contain motion lines and a ground shadow below the dinosaur.
+     Hide that lower decoration so it does not float upward with the player. */
+  clip-path: inset(0 0 35.5% 0);
+  /* The dinosaur body in the jump art is about 13% smaller than in the normal sprites. */
   transform: scale(1.15);
-  transform-origin: 50% 50%;
+  transform-origin: 50% 32%;
 }
