@@ -1,8 +1,8 @@
 "use strict";
 
 const JUMP_DIRECTION_MEMORY_MS=520;
-const JUMP_CARRY_SPEED=245;
-const JUMP_CARRY_DECAY_MS=620;
+const JUMP_CARRY_SPEED=215;
+const JUMP_CARRY_DECAY_MS=570;
 
 let recentHorizontalDirection="front";
 let recentHorizontalAt=0;
