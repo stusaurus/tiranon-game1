@@ -1,0 +1,101 @@
+.growth-v2-progress{
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px dashed #d9e8dc;
+}
+.growth-v2-progress__head,.growth-v2-progress__body{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.growth-v2-progress__head{color:#527267;font-size:11px;font-weight:900;}
+.growth-v2-progress__head strong{color:#2d6654;font-size:12px;}
+.growth-v2-progress__body{margin-top:6px;}
+.growth-v2-progress__body span{
+  flex:1;
+  padding:6px 8px;
+  border-radius:999px;
+  text-align:center;
+  color:#49665d;
+  background:#eef7ef;
+  font-size:11px;
+  font-weight:1000;
+}
+
+.evolution-overlay{
+  position:absolute;
+  inset:0;
+  z-index:130;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(39,51,43,.64);
+  backdrop-filter:blur(7px);
+}
+.evolution-overlay[hidden]{display:none;}
+.evolution-card{
+  width:min(100%,430px);
+  padding:24px 20px 22px;
+  border:3px solid #fff3c8;
+  border-radius:30px;
+  text-align:center;
+  background:linear-gradient(180deg,#fffdf4,#effce8);
+  box-shadow:0 22px 50px rgba(22,37,29,.3);
+}
+.evolution-kicker{
+  margin:0;
+  color:#d49833;
+  font-size:13px;
+  font-weight:1000;
+  letter-spacing:.2em;
+}
+.evolution-glow{
+  width:190px;
+  height:190px;
+  display:grid;
+  place-items:center;
+  margin:8px auto 4px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff8bb 0 35%,rgba(255,225,118,.48) 36% 56%,transparent 70%);
+  animation:evolution-pulse 1s ease-in-out infinite alternate;
+}
+.evolution-glow img{
+  max-width:165px;
+  max-height:165px;
+  object-fit:contain;
+  mix-blend-mode:multiply;
+}
+.evolution-card h2{margin:2px 0 8px;color:#2f6452;font-size:24px;}
+.evolution-card>p:not(.evolution-kicker){margin:0;color:#64796f;font-size:14px;font-weight:800;}
+.evolution-card button{
+  width:100%;
+  margin-top:18px;
+  min-height:54px;
+  border:0;
+  border-radius:18px;
+  color:#fff;
+  background:linear-gradient(145deg,#59c57a,#2e8a58);
+  box-shadow:0 5px 0 #226d45;
+  font-size:18px;
+  font-weight:1000;
+}
+.evolution-card button:active{transform:translateY(3px);box-shadow:0 2px 0 #226d45;}
+@keyframes evolution-pulse{from{transform:scale(.97)}to{transform:scale(1.04)}}
+
+/* JPEG素材の白地が重なって見えにくいよう、ホーム内の配置を少し整理。 */
+.home-decor--rug{width:min(54vw,245px)!important;opacity:.58!important;bottom:4px!important;}
+.home-decor--lamp{width:min(23vw,104px)!important;opacity:.62!important;right:-12px!important;bottom:14px!important;}
+.home-decor--toy{width:min(18vw,76px)!important;opacity:.76!important;left:8px!important;bottom:16px!important;}
+.home-room--care .home-tiranon{margin-bottom:32px!important;}
+.home-room--care .home-tiranon--paper{mix-blend-mode:multiply;filter:drop-shadow(0 7px 3px rgba(59,39,25,.12)) saturate(.96);}
+
+@media (max-width:520px){
+  .evolution-glow{width:165px;height:165px;}
+  .evolution-glow img{max-width:145px;max-height:145px;}
+  .evolution-card{padding:20px 16px;}
+  .evolution-card h2{font-size:21px;}
+}
+
+@media (prefers-reduced-motion:reduce){.evolution-glow{animation:none;}}
