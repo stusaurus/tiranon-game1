@@ -100,12 +100,28 @@ itemLabel=function(type){
   return "SCORE ×2!";
 };
 
-/* Hearts can keep appearing; remove the former two-clock-per-run restriction. */
+/* Heart chance rises when lives are low and falls sharply at full health. */
+function heartWeightForLives(currentLives){
+  if(currentLives<=1)return 60;
+  if(currentLives===2)return 45;
+  if(currentLives===3)return 30;
+  if(currentLives===4)return 15;
+  return 5;
+}
+
 randomItemType=function(){
-  const roll=Math.random();
-  if(roll<.29)return "magnet";
-  if(roll<.55)return "shield";
-  if(roll<.76)return "clock";
+  const weights={
+    magnet:29,
+    shield:26,
+    clock:heartWeightForLives(lives),
+    double:24
+  };
+  const total=weights.magnet+weights.shield+weights.clock+weights.double;
+  let roll=Math.random()*total;
+  for(const type of ["magnet","shield","clock","double"]){
+    roll-=weights[type];
+    if(roll<0)return type;
+  }
   return "double";
 };
 
@@ -256,53 +272,7 @@ if(typeof RUN_SKILLS!=="undefined"&&RUN_SKILLS.clockBoost){
   };
 }
 
-/* Level-up requirements grow: 7, 12, 18, 25, 33, 42, ... */
-function runStarsNeededForLevel(level){
-  const safe=Math.max(1,Math.floor(level));
-  return 7+Math.floor((safe-1)*(safe+8)/2);
-}
-
-if(typeof runUpdateHud==="function"){
-  runUpdateHud=function(){
-    const needed=runStarsNeededForLevel(runLevel);
-    const levelStart=Math.max(0,runNextLevelAt-needed);
-    const progress=Math.max(0,Math.min(needed,runStarsCollected-levelStart));
-    runLevelHud.innerHTML=`<strong>RUN Lv.${runLevel}</strong><span>⭐ ${progress}/${needed}</span>`;
-  };
-}
-
-if(typeof runResetState==="function"){
-  runResetState=function(){
-    runDraftPaused=false;
-    runStarsCollected=0;
-    runLevel=1;
-    runNextLevelAt=runStarsNeededForLevel(1);
-    runPauseSnapshot=null;
-    runSkillLevels={starPower:0,magnetBoost:0,shieldBoost:0,clockBoost:0,feverBoost:0,comboBoost:0};
-    runLevelOverlay.hidden=true;
-    runUpdateHud();
-  };
-}
-
-if(typeof runChooseSkill==="function"){
-  runChooseSkill=function(key){
-    if(!runDraftPaused||!RUN_SKILLS[key])return;
-    runSkillLevels[key]=Math.min(RUN_SKILL_MAX,runSkillLevels[key]+1);
-
-    if(key==="shieldBoost"&&typeof shieldCharges!=="undefined"){
-      shieldCharges+=1;
-      player.classList.add("shield-active");
-      if(typeof renderItemStatus==="function")renderItemStatus(performance.now());
-    }
-
-    runLevel++;
-    runNextLevelAt=runStarsCollected+runStarsNeededForLevel(runLevel);
-    runUpdateHud();
-    runResumeGame();
-  };
-}
-
-/* RUN choice pause/resume must not restart the old TIME countdown. */
+/* Keep the RUN level targets from run-levelup.js. Only override resume so LIFE mode does not restart TIME. */
 if(typeof runResumeGame==="function"){
   runResumeGame=function(){
     if(!runDraftPaused||!isPlaying)return;
