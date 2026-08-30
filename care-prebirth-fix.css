@@ -1,0 +1,93 @@
+/* 卵期は独立した育成フェーズとして見せる。 */
+.home-prebirth-fixed .home-level-pill{
+  font-size:0;
+}
+.home-prebirth-fixed .home-level-pill::before{
+  content:"🥚 たまご";
+  font-size:16px;
+  line-height:1;
+}
+.home-prebirth-fixed #home-level-text,
+.home-prebirth-fixed .home-exp-track,
+.home-prebirth-fixed .home-exp-text{
+  display:none!important;
+}
+.home-prebirth-fixed .home-growth-card{
+  padding-top:14px;
+}
+
+/* 卵そのものに巣が描かれているので、下の家具を重ねない。 */
+.home-prebirth-fixed .home-decor--rug,
+.home-prebirth-fixed .home-decor--toy,
+.home-prebirth-fixed .home-decor--lamp{
+  display:none!important;
+}
+
+/* 白背景JPEGを洞窟に直接乗せて透けて見えないよう、明るい土のスポットを後ろに敷く。 */
+.home-prebirth-fixed .home-room--care::before{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  z-index:2;
+  width:min(66vw,290px);
+  height:min(52vw,225px);
+  content:"";
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(255,249,226,.96) 0 58%,rgba(246,225,185,.72) 72%,transparent 73%);
+  filter:blur(.2px);
+  pointer-events:none;
+}
+.home-prebirth-fixed .home-room--care .home-tiranon{
+  z-index:3;
+  width:min(58vw,245px)!important;
+  max-height:245px!important;
+  margin-bottom:20px!important;
+  mix-blend-mode:multiply!important;
+  opacity:1!important;
+  filter:drop-shadow(0 8px 5px rgba(65,43,25,.18)) saturate(1.04)!important;
+}
+
+/* 「もうすぐうまれそう」は顔を出さず、卵にヒビだけ加える。 */
+.egg-cracks{
+  position:absolute;
+  left:50%;
+  bottom:128px;
+  z-index:4;
+  width:76px;
+  height:82px;
+  transform:translateX(-50%);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .25s ease;
+}
+.home-egg-cracked .egg-cracks{opacity:1;}
+.egg-cracks i{
+  position:absolute;
+  display:block;
+  width:5px;
+  border-radius:999px;
+  background:#a96845;
+  box-shadow:0 0 0 1px rgba(255,238,197,.45);
+  transform-origin:center top;
+}
+.egg-cracks i:nth-child(1){left:34px;top:4px;height:27px;transform:rotate(18deg);}
+.egg-cracks i:nth-child(2){left:43px;top:28px;height:24px;transform:rotate(-39deg);}
+.egg-cracks i:nth-child(3){left:30px;top:48px;height:26px;transform:rotate(31deg);}
+.egg-cracks i:nth-child(4){left:16px;top:38px;height:22px;transform:rotate(-50deg);}
+
+/* 誕生後は通常の育成表示へ戻す。 */
+.evolution-glow img{opacity:1;}
+
+@media (max-width:520px){
+  .home-prebirth-fixed .home-room--care .home-tiranon{
+    width:min(62vw,230px)!important;
+    max-height:230px!important;
+  }
+  .home-prebirth-fixed .home-room--care::before{
+    width:min(72vw,275px);
+    height:min(56vw,215px);
+    bottom:14px;
+  }
+  .egg-cracks{bottom:120px;transform:translateX(-50%) scale(.9);}
+}
