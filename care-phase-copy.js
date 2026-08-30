@@ -179,4 +179,59 @@ collectItem=function(item,currentTime){
   renderItemStatus(currentTime);
 };
 
+/*
+ * お世話の役割を分ける。
+ * なでる：ごきげん回復だけ。
+ * あそぶ：お腹を使って成長ポイントを得るだけ。
+ */
+if(typeof countPetForGrowth==="function"){
+  carePetButton?.removeEventListener("click",countPetForGrowth);
+  homeTiranon?.removeEventListener("pointerdown",countPetForGrowth);
+}
+
+const playWithToyBeforeRoleSplit=typeof playWithToy==="function"?playWithToy:null;
+if(playWithToyBeforeRoleSplit){
+  playWithToy=function(key,toy){
+    if(typeof isPreBirth==="function"&&isPreBirth()){
+      playWithToyBeforeRoleSplit(key,toy);
+      return;
+    }
+
+    const moodBefore=careState.mood;
+    const moodAtBefore=careState.moodAt;
+    const playAtBefore=careState.lastPlayAt;
+    playWithToyBeforeRoleSplit(key,toy);
+
+    if(careState.lastPlayAt===playAtBefore)return;
+
+    careState.mood=moodBefore;
+    careState.moodAt=moodAtBefore;
+    clampCare();
+    saveCareState();
+    renderCareHome();
+    setHomeSpeech(`${toy.name}でいっぱいあそんだ！`);
+  };
+}
+
+const renderToyPanelBeforeRoleSplit=typeof renderToyPanel==="function"?renderToyPanel:null;
+if(renderToyPanelBeforeRoleSplit&&typeof playButton!=="undefined"){
+  playButton.removeEventListener("click",renderToyPanelBeforeRoleSplit);
+  renderToyPanel=function(){
+    carePanelTitle.textContent="おもちゃをえらぶ";
+    carePanelKicker.textContent="PLAY";
+    carePanelItems.innerHTML="";
+    for(const [key,toy] of Object.entries(CARE_TOYS)){
+      const unlocked=petState.level>=toy.level;
+      const button=document.createElement("button");
+      button.className="care-item-card";
+      button.disabled=!unlocked;
+      button.innerHTML=`<img loading="lazy" src="${toy.image}" alt=""><div><strong>${toy.name}</strong><small>${unlocked?"🌱 成長 +2　🍖 -6":`Lv.${toy.level}で解放`}</small><span>${unlocked?"あそぶ":"🔒"}</span></div>`;
+      if(unlocked)button.addEventListener("click",()=>playWithToy(key,toy));
+      carePanelItems.appendChild(button);
+    }
+    carePanel.hidden=false;
+  };
+  playButton.addEventListener("click",renderToyPanel);
+}
+
 renderPhaseCopy();
