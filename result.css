@@ -15,7 +15,7 @@
   text-align:center;
 }
 
-.result-label {
+.game-over .result-label {
   margin:0 0 10px;
   color:#277d68;
   font-size:16px;
@@ -58,7 +58,7 @@
   100% { transform:scale(1) rotate(0); }
 }
 
-.rank-message {
+.game-over .rank-message {
   margin:0 0 18px;
   color:#315f54;
   font-size:18px;
@@ -87,7 +87,7 @@
 .result-score-row strong { color:#173f36; font-size:28px; line-height:1; }
 .result-score-row--best { background:rgba(240,255,201,.38); }
 
-.new-best {
+.game-over .new-best {
   margin:13px 0 0;
   color:#e18b00;
   font-size:19px;
@@ -96,7 +96,7 @@
   text-shadow:0 1px 0 #fff4bd;
   animation:new-best-pulse .55s ease-in-out infinite alternate;
 }
-.new-best[hidden] { display:none; }
+.game-over .new-best[hidden] { display:none; }
 @keyframes new-best-pulse { from { transform:scale(.96); } to { transform:scale(1.05); } }
 
 .game-over .restart-button {
@@ -119,7 +119,7 @@
 @media (max-height:650px) {
   .result-card { padding:16px 18px; }
   .result-rank { width:82px; height:82px; font-size:52px; }
-  .rank-message { margin-bottom:10px; }
+  .game-over .rank-message { margin-bottom:10px; }
   .result-score-row { padding:9px 12px; }
   .game-over .restart-button { margin-top:12px; padding:11px 16px; }
 }
