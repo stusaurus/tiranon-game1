@@ -1,1 +1,0 @@
-clean jump sprites will be added as binary blobs
