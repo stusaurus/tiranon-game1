@@ -28,6 +28,13 @@ renderCareHome=function(){
   renderPhaseCopy();
 };
 
+/* home-mode側が名前を書き戻しても、最後に卵期コピーを確定させる。 */
+const renderHomeBeforePhaseCopy=renderHome;
+renderHome=function(){
+  renderHomeBeforePhaseCopy();
+  renderPhaseCopy();
+};
+
 /* あたためる・みまもるの直後は、その反応メッセージを優先する。 */
 const warmEggBeforePhaseCopy=typeof warmEgg==="function"?warmEgg:null;
 if(warmEggBeforePhaseCopy){
