@@ -173,6 +173,25 @@
 @keyframes care-pop{0%{transform:scale(1)}45%{transform:scale(1.12) translateY(-8px)}100%{transform:scale(1)}}
 @keyframes care-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg) translateY(-5px)}60%{transform:rotate(5deg) translateY(-5px)}}
 
+/* 幼少期の紙素材は、下の家具とmultiply合成すると二重に見えるため重ねない。 */
+.home-room--care .home-tiranon--paper ~ .home-decor{
+  display:none!important;
+}
+/* 白背景を自然になじませつつ、洞窟模様がキャラ本体に透けすぎないよう土台を敷く。 */
+.home-room--care:has(.home-tiranon--paper)::before{
+  position:absolute;
+  left:50%;
+  bottom:12px;
+  z-index:2;
+  width:min(62vw,265px);
+  height:min(48vw,205px);
+  content:"";
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(255,250,236,.98) 0 62%,rgba(247,228,193,.74) 76%,transparent 77%);
+  pointer-events:none;
+}
+
 @media (max-width:520px){
   .home-room--care{min-height:335px;}
   .home-room--care .home-speech{top:45px;max-width:150px;}
@@ -183,6 +202,11 @@
   .care-item-card{gap:6px;padding:7px;}
   .care-item-card img{width:60px;height:60px;}
   .care-item-card strong{font-size:12px;}
+  .home-room--care:has(.home-tiranon--paper)::before{
+    width:min(68vw,250px);
+    height:min(52vw,195px);
+    bottom:10px;
+  }
 }
 
 @media (prefers-reduced-motion:reduce){
