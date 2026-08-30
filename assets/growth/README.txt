@@ -1,0 +1,1 @@
+Growth assets used by care-prebirth-fix.js. Artwork is based on the four user-provided growth-stage images.
