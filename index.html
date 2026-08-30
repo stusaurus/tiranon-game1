@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tiranon Adventure</title>
-  <link rel="stylesheet" href="style.css?v=20260830-1200">
+  <link rel="stylesheet" href="style.css?v=20260830-v2">
 </head>
 <body>
   <main id="game" class="game" aria-label="Tiranon Adventureのゲーム画面">
@@ -20,11 +20,11 @@
 
     <div id="play-area" class="play-area">
       <div id="player" class="player" role="img" aria-label="ティラノン">
-        <img id="player-sprite" class="player__sprite" src="IMG_1796.png?v=20260830-1032" width="126" height="126" alt="" draggable="false">
+        <img id="player-sprite" class="player__sprite" src="IMG_1796.png?v=20260830-v2" width="126" height="126" alt="" draggable="false">
       </div>
     </div>
 
-    <nav class="controls" aria-label="移動操作">
+    <nav class="controls" aria-label="移動とジャンプ操作">
       <button id="left-button" class="control-button control-button--left" type="button" aria-label="左へ移動">
         <span class="footprint footprint--left" aria-hidden="true">
           <span class="footprint__toe footprint__toe--one"></span>
@@ -32,6 +32,9 @@
           <span class="footprint__toe footprint__toe--three"></span>
           <span class="footprint__pad"></span>
         </span>
+      </button>
+      <button id="jump-button" class="jump-button" type="button" aria-label="ジャンプ">
+        <span class="jump-mark" aria-hidden="true"></span>
       </button>
       <button id="right-button" class="control-button control-button--right" type="button" aria-label="右へ移動">
         <span class="footprint footprint--right" aria-hidden="true">
@@ -50,6 +53,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=20260830-1032"></script>
+  <script src="game.js?v=20260830-v2"></script>
 </body>
 </html>
