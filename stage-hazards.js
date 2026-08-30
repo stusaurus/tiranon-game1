@@ -1,7 +1,7 @@
 "use strict";
 
-const FALL_HAZARD_SCORE=80;
-const AIR_HAZARD_SCORE=200;
+const FALL_HAZARD_STAR_COUNT=25;
+const AIR_HAZARD_STAR_COUNT=50;
 const FALL_HAZARD_SPEED=135.7; // ITEM_FALL_SPEED 118 × 1.15
 const AIR_HAZARD_SPEED=242;
 const FALL_SPAWN_MIN=2500;
@@ -22,10 +22,14 @@ function specialHazardsCanMove(){
   return true;
 }
 
+function specialHazardStarsCollected(){
+  return typeof runStarsCollected==="number"?runStarsCollected:0;
+}
+
 function specialHazardDelay(min,max){return min+Math.random()*(max-min);}
 
 function createDangerStar(){
-  if(!specialHazardsCanMove()||score<FALL_HAZARD_SCORE)return;
+  if(!specialHazardsCanMove()||specialHazardStarsCollected()<FALL_HAZARD_STAR_COUNT)return;
   if(playArea.querySelector(".danger-star,.air-hazard"))return;
 
   const hazard=document.createElement("div");
@@ -42,7 +46,7 @@ function createDangerStar(){
 }
 
 function createAirHazard(){
-  if(!specialHazardsCanMove()||score<AIR_HAZARD_SCORE)return;
+  if(!specialHazardsCanMove()||specialHazardStarsCollected()<AIR_HAZARD_STAR_COUNT)return;
   if(playArea.querySelector(".rock,.danger-star,.air-hazard,.air-warning"))return;
 
   const fromLeft=Math.random()<.5;
@@ -54,7 +58,7 @@ function createAirHazard(){
 
   setTimeout(()=>{
     warning.remove();
-    if(!specialHazardsCanMove()||score<AIR_HAZARD_SCORE)return;
+    if(!specialHazardsCanMove()||specialHazardStarsCollected()<AIR_HAZARD_STAR_COUNT)return;
     if(playArea.querySelector(".rock,.danger-star,.air-hazard"))return;
 
     const hazard=document.createElement("div");
