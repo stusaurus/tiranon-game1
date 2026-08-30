@@ -1,0 +1,267 @@
+.coin-hud {
+  position:absolute;
+  top:76px;
+  left:12px;
+  z-index:14;
+  min-width:74px;
+  padding:6px 10px;
+  border:2px solid rgba(255,255,255,.88);
+  border-radius:999px;
+  color:#664600;
+  background:rgba(255,244,169,.9);
+  box-shadow:0 3px 9px rgba(72,55,0,.16);
+  font-size:14px;
+  font-weight:1000;
+  text-align:center;
+  pointer-events:none;
+}
+
+.game-coin {
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  border:3px solid #fff4a4;
+  border-radius:50%;
+  background:linear-gradient(145deg,#fffbd0,#ffc72f);
+  box-shadow:0 0 11px rgba(255,244,159,.95),0 0 22px rgba(255,190,31,.48),0 5px 10px rgba(80,58,0,.2);
+  font-size:28px;
+  line-height:1;
+  pointer-events:none;
+  animation:coin-spin .75s ease-in-out infinite alternate;
+}
+@keyframes coin-spin {
+  from { filter:brightness(.95); }
+  to { filter:brightness(1.18); }
+}
+
+.coin-popup {
+  position:absolute;
+  z-index:23;
+  padding:8px 13px;
+  border:3px solid #fff4a8;
+  border-radius:999px;
+  color:#fffbe0;
+  background:rgba(205,132,0,.92);
+  box-shadow:0 6px 14px rgba(89,55,0,.2);
+  font-size:20px;
+  font-weight:1000;
+  white-space:nowrap;
+  transform:translateX(-50%);
+  pointer-events:none;
+  animation:coin-popup .7s ease-out forwards;
+}
+@keyframes coin-popup {
+  0% { opacity:0; transform:translate(-50%,10px) scale(.65); }
+  25% { opacity:1; transform:translate(-50%,0) scale(1.15); }
+  100% { opacity:0; transform:translate(-50%,-34px) scale(.95); }
+}
+
+.progression-summary {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:12px;
+}
+.progression-summary > div {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  padding:8px 10px;
+  border:2px solid #e8e4bb;
+  border-radius:14px;
+  color:#5d6042;
+  background:#fffde8;
+  font-size:12px;
+  font-weight:900;
+}
+.progression-summary strong {
+  color:#8a6500;
+  font-size:20px;
+  line-height:1.15;
+}
+
+.shop-open-button,
+.game-over .restart-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  vertical-align:top;
+  min-height:54px;
+  margin-top:14px;
+}
+.shop-open-button {
+  width:34%;
+  margin-right:2%;
+  padding:12px 8px;
+  border:3px solid #fff1aa;
+  border-radius:18px;
+  color:#684c00;
+  background:linear-gradient(145deg,#fff5a8,#f1ca45);
+  box-shadow:0 6px 0 #c59d29,0 8px 13px rgba(0,0,0,.14);
+  font-size:17px;
+  font-weight:1000;
+}
+.game-over .restart-button {
+  width:62%;
+  margin-left:0;
+}
+.shop-open-button:active {
+  transform:translateY(5px);
+  box-shadow:0 1px 0 #c59d29,0 3px 5px rgba(0,0,0,.12);
+}
+
+.shop-panel {
+  position:absolute;
+  inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(18,55,59,.72);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.shop-panel[hidden] { display:none; }
+.shop-card {
+  width:min(94vw,430px);
+  max-height:92%;
+  overflow:auto;
+  padding:20px;
+  border:3px solid rgba(255,255,255,.94);
+  border-radius:26px;
+  background:linear-gradient(180deg,#fafff8,#effced);
+  box-shadow:0 16px 36px rgba(5,45,39,.3);
+  -webkit-overflow-scrolling:touch;
+}
+.shop-header {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.shop-kicker {
+  margin:0 0 3px;
+  color:#d09a22;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.16em;
+}
+.shop-header h2 {
+  margin:0;
+  color:#275e50;
+  font-size:24px;
+}
+.shop-close {
+  flex:0 0 auto;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  color:#315f54;
+  background:#e2f3e7;
+  font-size:28px;
+  font-weight:700;
+}
+.shop-wallet {
+  margin:13px 0;
+  padding:9px 13px;
+  border:2px solid #f3df89;
+  border-radius:14px;
+  color:#675323;
+  background:#fff8ca;
+  font-size:14px;
+  font-weight:900;
+}
+.shop-wallet strong { float:right; color:#8b6500; font-size:18px; }
+.shop-items { display:grid; gap:9px; }
+.shop-item {
+  display:grid;
+  grid-template-columns:50px minmax(0,1fr) 72px;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:2px solid #dceee2;
+  border-radius:17px;
+  background:#fff;
+}
+.shop-item__icon {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  border-radius:15px;
+  background:#f2faef;
+  font-size:27px;
+  font-weight:1000;
+}
+.shop-item__body { min-width:0; }
+.shop-item__title {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:7px;
+  color:#264f44;
+  font-size:15px;
+}
+.shop-item__title span {
+  flex:0 0 auto;
+  padding:2px 7px;
+  border-radius:999px;
+  color:#fff;
+  background:#4e9f78;
+  font-size:11px;
+}
+.shop-item__body p {
+  margin:5px 0 0;
+  color:#61756d;
+  font-size:11px;
+  font-weight:700;
+  line-height:1.35;
+}
+.shop-upgrade {
+  min-height:44px;
+  padding:7px 6px;
+  border:0;
+  border-radius:13px;
+  color:#604900;
+  background:#ffe36d;
+  box-shadow:0 4px 0 #d3af30;
+  font-size:12px;
+  font-weight:1000;
+}
+.shop-upgrade:disabled {
+  color:#87928d;
+  background:#e5eae7;
+  box-shadow:none;
+  opacity:.72;
+}
+.shop-upgrade:not(:disabled):active { transform:translateY(3px); box-shadow:0 1px 0 #d3af30; }
+
+@media (max-width:520px) {
+  .coin-hud { top:112px; left:8px; font-size:12px; min-width:66px; padding:5px 8px; }
+  .game-coin { width:44px; height:44px; font-size:25px; }
+  .progression-summary { margin-top:9px; }
+  .progression-summary > div { padding:6px 8px; }
+  .progression-summary strong { font-size:18px; }
+  .shop-open-button,.game-over .restart-button { min-height:50px; margin-top:10px; }
+  .shop-open-button { font-size:15px; }
+  .shop-card { padding:16px 14px; }
+  .shop-item { grid-template-columns:46px minmax(0,1fr) 66px; gap:8px; padding:8px; }
+  .shop-item__icon { width:44px; height:44px; font-size:24px; }
+}
+
+@media (max-height:700px) {
+  .progression-summary { margin-top:7px; }
+  .progression-summary > div { padding:5px 8px; }
+  .shop-open-button,.game-over .restart-button { min-height:45px; margin-top:8px; padding-top:9px; padding-bottom:9px; }
+  .shop-card { max-height:94%; }
+}
