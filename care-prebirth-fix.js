@@ -1,6 +1,7 @@
 "use strict";
 
-const PREBIRTH_EGG_IMAGE="9D04E449-4B60-4EC9-A5F1-C90CB338CEC1.jpeg";
+/* 育成用の卵。おもちゃ・家具用の卵はここでは使わない。 */
+const PREBIRTH_EGG_IMAGE="50DFE3E9-7F3D-4F43-904D-80FCC956FE8D.jpeg";
 const BIRTH_MOMENT_IMAGE="CD0AD315-5B4E-41A6-810F-89806D5C27F3.jpeg";
 
 if(typeof CARE_GROWTH_V2_STAGES!=="undefined"){
@@ -23,11 +24,13 @@ function applyPrebirthVisualFix(){
   homeRoom?.classList.toggle("home-egg-cracked",cracked);
 
   if(preBirth&&homeTiranon){
-    homeTiranon.src=`${PREBIRTH_EGG_IMAGE}?v=20260830-eggfix1`;
+    homeTiranon.src=`${PREBIRTH_EGG_IMAGE}?v=20260830-eggfix2`;
     homeTiranon.dataset.growth=cracked?"hatch":"egg";
     homeTiranon.classList.add("home-egg-visual");
+    homeTiranon.alt="ティラノンのたまご";
   }else{
     homeTiranon?.classList.remove("home-egg-visual");
+    if(homeTiranon)homeTiranon.alt="ティラノン";
   }
 
   const growthName=document.querySelector(".home-growth-head > div > span");
@@ -61,7 +64,7 @@ const maybeShowEvolutionBeforePrebirthFix=maybeShowEvolution;
 maybeShowEvolution=function(){
   maybeShowEvolutionBeforePrebirthFix();
   if(careGrowthV2.pendingEvolution===2&&evolutionImage){
-    evolutionImage.src=`${BIRTH_MOMENT_IMAGE}?v=20260830-birth1`;
+    evolutionImage.src=`${BIRTH_MOMENT_IMAGE}?v=20260830-birth2`;
   }
 };
 
