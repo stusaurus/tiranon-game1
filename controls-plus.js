@@ -1,34 +1,37 @@
 "use strict";
 
-const JUMP_DIRECTION_MEMORY_MS=520;
-const JUMP_CARRY_SPEED=215;
-const JUMP_CARRY_DECAY_MS=570;
+const JUMP_DIRECTION_MEMORY_MS=120;
+const JUMP_ASSIST_SPEED=135;
+const JUMP_ASSIST_MS=180;
 
 let recentHorizontalDirection="front";
 let recentHorizontalAt=0;
-let jumpCarryDirection="front";
-let jumpCarryStartedAt=0;
+let jumpAssistDirection="front";
+let jumpAssistStartedAt=0;
 let controlsPlusPreviousTime=performance.now();
 
-function clearJumpCarryMemory(){
+function clearJumpAssist(){
   recentHorizontalDirection="front";
   recentHorizontalAt=0;
-  jumpCarryDirection="front";
-  jumpCarryStartedAt=0;
+  jumpAssistDirection="front";
+  jumpAssistStartedAt=0;
 }
 
-function rememberHorizontalDirection(direction){
+function rememberHorizontalRelease(direction){
   if(direction!=="left"&&direction!=="right")return;
   recentHorizontalDirection=direction;
   recentHorizontalAt=performance.now();
 }
 
-leftButton.addEventListener("pointerdown",()=>rememberHorizontalDirection("left"),{capture:true});
-rightButton.addEventListener("pointerdown",()=>rememberHorizontalDirection("right"),{capture:true});
+/* 方向を離した直後だけ、ごく短く横ジャンプを補助する。 */
+leftButton.addEventListener("pointerup",()=>rememberHorizontalRelease("left"),{capture:true});
+rightButton.addEventListener("pointerup",()=>rememberHorizontalRelease("right"),{capture:true});
+leftButton.addEventListener("pointercancel",()=>rememberHorizontalRelease("left"),{capture:true});
+rightButton.addEventListener("pointercancel",()=>rememberHorizontalRelease("right"),{capture:true});
 
-window.addEventListener("keydown",event=>{
-  if(event.code==="ArrowLeft"||event.code==="KeyA")rememberHorizontalDirection("left");
-  if(event.code==="ArrowRight"||event.code==="KeyD")rememberHorizontalDirection("right");
+window.addEventListener("keyup",event=>{
+  if(event.code==="ArrowLeft"||event.code==="KeyA")rememberHorizontalRelease("left");
+  if(event.code==="ArrowRight"||event.code==="KeyD")rememberHorizontalRelease("right");
 },{capture:true});
 
 const jumpBeforeControlsPlus=jump;
@@ -37,31 +40,32 @@ jump=function(){
 
   const now=performance.now();
   const liveDirection=requestedDirection();
+
+  /* 左右を押している間は元のゲーム処理だけで横移動する。 */
   if(liveDirection==="left"||liveDirection==="right"){
-    jumpCarryDirection=liveDirection;
-    rememberHorizontalDirection(liveDirection);
+    jumpAssistDirection="front";
+    jumpAssistStartedAt=0;
   }else if(now-recentHorizontalAt<=JUMP_DIRECTION_MEMORY_MS){
-    jumpCarryDirection=recentHorizontalDirection;
+    jumpAssistDirection=recentHorizontalDirection;
+    jumpAssistStartedAt=now;
   }else{
-    jumpCarryDirection="front";
+    jumpAssistDirection="front";
+    jumpAssistStartedAt=0;
   }
-  jumpCarryStartedAt=now;
 
   jumpBeforeControlsPlus();
 
-  if(jumpCarryDirection==="left"||jumpCarryDirection==="right"){
-    setPlayerImage(jumpCarryDirection);
-  }
+  if(liveDirection==="left"||liveDirection==="right")setPlayerImage(liveDirection);
+  else if(jumpAssistDirection==="left"||jumpAssistDirection==="right")setPlayerImage(jumpAssistDirection);
+  else setPlayerImage("front");
 };
 
-/* 着地したフレームで横慣性と直前方向を完全に消す。 */
+/* 着地した瞬間に横方向の記憶・補助を必ず消す。 */
 const updateJumpBeforeControlsPlus=updateJump;
 updateJump=function(dt){
   const wasJumping=isJumping;
   updateJumpBeforeControlsPlus(dt);
-  if(wasJumping&&!isJumping){
-    clearJumpCarryMemory();
-  }
+  if(wasJumping&&!isJumping)clearJumpAssist();
 };
 
 const gameLoopBeforeControlsPlus=gameLoop;
@@ -69,21 +73,17 @@ gameLoop=function(currentTime){
   const dt=Math.min(Math.max(0,(currentTime-controlsPlusPreviousTime)/1000),.05);
   controlsPlusPreviousTime=currentTime;
 
-  if(isPlaying&&isJumping&&!movingLeft&&!movingRight&&(jumpCarryDirection==="left"||jumpCarryDirection==="right")){
-    const elapsed=currentTime-jumpCarryStartedAt;
-    if(elapsed<JUMP_CARRY_DECAY_MS){
-      const strength=Math.max(.28,1-elapsed/JUMP_CARRY_DECAY_MS);
-      const direction=jumpCarryDirection==="left"?-1:1;
-      playerX+=direction*JUMP_CARRY_SPEED*strength*dt;
+  /* 指を離してジャンプボタンへ移した時だけ、最初の0.18秒だけ小さく補助。 */
+  if(isPlaying&&isJumping&&!movingLeft&&!movingRight&&(jumpAssistDirection==="left"||jumpAssistDirection==="right")){
+    const elapsed=currentTime-jumpAssistStartedAt;
+    if(elapsed>=0&&elapsed<JUMP_ASSIST_MS){
+      const strength=1-elapsed/JUMP_ASSIST_MS;
+      const direction=jumpAssistDirection==="left"?-1:1;
+      playerX+=direction*JUMP_ASSIST_SPEED*strength*dt;
       clampPlayerX();
-    }
-  }
-
-  if(isJumping){
-    const liveDirection=requestedDirection();
-    if(liveDirection==="left"||liveDirection==="right"){
-      jumpCarryDirection=liveDirection;
-      rememberHorizontalDirection(liveDirection);
+    }else{
+      jumpAssistDirection="front";
+      jumpAssistStartedAt=0;
     }
   }
 
@@ -92,7 +92,7 @@ gameLoop=function(currentTime){
 
 const resetPlayerPositionBeforeControlsPlus=resetPlayerPosition;
 resetPlayerPosition=function(){
-  clearJumpCarryMemory();
+  clearJumpAssist();
   controlsPlusPreviousTime=performance.now();
   resetPlayerPositionBeforeControlsPlus();
 };
