@@ -48,7 +48,14 @@
   transform:translateX(-50%);
 }
 .home-room--care .home-room__label{display:none;}
-.home-room--care .home-speech{z-index:5;top:50px;background:rgba(255,252,239,.94);border-color:#f0dfb8;color:#6c513b;}
+.home-room--care .home-speech{
+  z-index:5;
+  top:50px;
+  white-space:pre-line;
+  background:rgba(255,252,239,.94);
+  border-color:#f0dfb8;
+  color:#6c513b;
+}
 .home-room--care .home-tiranon{
   z-index:3;
   width:min(44vw,205px);

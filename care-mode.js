@@ -158,7 +158,7 @@ function renderCareHome(){
   if(careState.hunger<=25)setHomeSpeech("おなかすいた〜…ごはんほしいな");
   else if(careState.mood<=25)setHomeSpeech("ちょっとさみしいな。なでてほしい！");
   else if(careState.hunger>=80&&careState.mood>=80){
-    if(stage.key==="baby")setHomeSpeech("げんきいっぱい！きょうもおせわしてね");
+    if(stage.key==="baby")setHomeSpeech("げんきいっぱい！\nきょうもおせわしてね");
     else if(stage.key==="crawl")setHomeSpeech("げんきいっぱい！もっとあそびたい！");
     else setHomeSpeech("げんきいっぱい！あそびにいこう！");
   }
