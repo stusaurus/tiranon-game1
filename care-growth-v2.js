@@ -544,6 +544,6 @@ if(new URLSearchParams(location.search).get(GROWTH_TEST_QUERY_KEY)==="1"){
   enableGrowthTestMode();
 }
 
-renderGrowthV2Progress();
-renderLifePhaseActions();
+/* 初回表示も、Lv.ではなく成長段階の状態を使って描き直す。 */
+renderHome();
 saveGrowthV2();
