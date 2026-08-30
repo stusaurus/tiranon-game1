@@ -2,7 +2,7 @@
 
 const FALL_HAZARD_SCORE=80;
 const AIR_HAZARD_SCORE=200;
-const FALL_HAZARD_SPEED=208;
+const FALL_HAZARD_SPEED=135.7; // ITEM_FALL_SPEED 118 × 1.15
 const AIR_HAZARD_SPEED=242;
 const FALL_SPAWN_MIN=2500;
 const FALL_SPAWN_MAX=3900;
@@ -32,10 +32,12 @@ function createDangerStar(){
   hazard.className="danger-star";
   hazard.textContent="✹";
   hazard.setAttribute("aria-hidden","true");
-  const maxX=Math.max(12,playArea.clientWidth-46);
-  hazard.dataset.x=String(8+Math.random()*Math.max(8,maxX-8));
-  hazard.dataset.y="0";
-  hazard.style.transform=`translate(${hazard.dataset.x}px,0px)`;
+
+  // アイテムと同じ落下開始位置・横配置ルールにする。
+  const maxX=Math.max(20,playArea.clientWidth-58);
+  hazard.dataset.x=String(10+Math.random()*Math.max(10,maxX-10));
+  hazard.dataset.y="72";
+  hazard.style.transform=`translate(${hazard.dataset.x}px,72px)`;
   playArea.appendChild(hazard);
 }
 
