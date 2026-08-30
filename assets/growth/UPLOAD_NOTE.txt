@@ -1,0 +1,1 @@
+Binary growth assets will be committed through Git blob objects.
