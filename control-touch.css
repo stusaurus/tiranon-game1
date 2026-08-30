@@ -1,0 +1,25 @@
+.control-button {
+  position:relative;
+}
+
+/* Keep the visible footprint button compact while making thumb input forgiving. */
+.control-button::after {
+  position:absolute;
+  inset:-18px;
+  content:"";
+  border-radius:32px;
+  background:transparent;
+  pointer-events:auto;
+}
+
+@media (max-width:520px) {
+  .controls {
+    padding-right:22px;
+    padding-left:22px;
+    bottom:20px;
+  }
+
+  .control-button::after {
+    inset:-20px;
+  }
+}
