@@ -1,0 +1,63 @@
+.game-item {
+  width:60px;
+  height:60px;
+  border-width:4px;
+  font-size:34px;
+  box-shadow:
+    0 6px 12px rgba(25,71,61,.24),
+    0 0 14px rgba(255,255,255,.9),
+    0 0 22px rgba(136,240,220,.42),
+    inset 0 -4px 0 rgba(32,85,68,.08);
+}
+
+.game-item--clock {
+  box-shadow:
+    0 6px 12px rgba(25,71,61,.24),
+    0 0 14px rgba(255,247,193,.95),
+    0 0 24px rgba(255,202,72,.52),
+    inset 0 -4px 0 rgba(32,85,68,.08);
+}
+
+.game-item--shield {
+  box-shadow:
+    0 6px 12px rgba(25,71,61,.24),
+    0 0 14px rgba(214,244,255,.96),
+    0 0 24px rgba(100,194,255,.5),
+    inset 0 -4px 0 rgba(32,85,68,.08);
+}
+
+.game-item--double {
+  font-size:24px;
+  box-shadow:
+    0 6px 12px rgba(25,71,61,.24),
+    0 0 15px rgba(255,245,177,.98),
+    0 0 25px rgba(255,174,38,.62),
+    inset 0 -4px 0 rgba(121,66,0,.14);
+}
+
+.item-popup--pickup {
+  z-index:22;
+  padding:9px 15px;
+  border-width:3px;
+  font-size:21px;
+  letter-spacing:.02em;
+  box-shadow:0 7px 16px rgba(0,0,0,.2),0 0 12px rgba(255,255,255,.38);
+  animation:item-pickup-pop .7s ease-out forwards;
+}
+
+@keyframes item-pickup-pop {
+  0% { opacity:0; transform:translate(-50%,12px) scale(.55); }
+  24% { opacity:1; transform:translate(-50%,0) scale(1.18); }
+  58% { opacity:1; transform:translate(-50%,-8px) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-34px) scale(.94); }
+}
+
+@media (max-width:520px) {
+  .game-item {
+    width:55px;
+    height:55px;
+    font-size:30px;
+  }
+  .game-item--double { font-size:22px; }
+  .item-popup--pickup { font-size:19px; padding:8px 13px; }
+}
