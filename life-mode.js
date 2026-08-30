@@ -2,12 +2,50 @@
 
 const LIFE_MAX=5;
 let lives=LIFE_MAX;
+let careRunHunger=100;
+let careRunMood=100;
+let careMoodBonusCarry=0;
+
+function careConditionAvailable(){
+  return typeof careState!=="undefined"&&(typeof isPreBirth!=="function"||!isPreBirth());
+}
+
+function snapshotCareCondition(){
+  careMoodBonusCarry=0;
+  if(!careConditionAvailable()){
+    careRunHunger=100;
+    careRunMood=100;
+    return;
+  }
+  if(typeof applyCareDecay==="function")applyCareDecay();
+  careRunHunger=Math.max(0,Math.min(100,Number(careState.hunger)||0));
+  careRunMood=Math.max(0,Math.min(100,Number(careState.mood)||0));
+}
+
+function startingLivesForHunger(hunger){
+  if(hunger<40)return 3;
+  if(hunger<70)return 4;
+  return LIFE_MAX;
+}
+
+function moodScoreMultiplier(mood){
+  if(mood>=80)return 1.25;
+  if(mood>=60)return 1.10;
+  return 1;
+}
+
+function careConditionLabel(){
+  if(!careConditionAvailable())return "";
+  const bonus=Math.round((moodScoreMultiplier(careRunMood)-1)*100);
+  const moodText=bonus>0?`😊スコア+${bonus}%`:"😊スコア通常";
+  return `<span style="display:block;margin-top:2px;font-size:10px;font-weight:800;line-height:1.1;white-space:nowrap">🍖${lives}ハート　${moodText}</span>`;
+}
 
 function renderLives(){
   const full="❤️".repeat(Math.max(0,lives));
   const empty="♡".repeat(Math.max(0,LIFE_MAX-lives));
   timeDisplay.classList.add("life-display");
-  timeDisplay.innerHTML=`<span class="life-hearts" aria-label="ライフ ${lives}/${LIFE_MAX}">${full}<span class="life-hearts__empty">${empty}</span></span>`;
+  timeDisplay.innerHTML=`<span class="life-hearts" aria-label="ライフ ${lives}/${LIFE_MAX}">${full}<span class="life-hearts__empty">${empty}</span></span>${careConditionLabel()}`;
 }
 
 function heartHealForLevel(level){
@@ -37,7 +75,8 @@ function showLifePopup(text,className=""){
 }
 
 function resetLifeRound(){
-  lives=LIFE_MAX;
+  snapshotCareCondition();
+  lives=careConditionAvailable()?startingLivesForHunger(careRunHunger):LIFE_MAX;
   clearInterval(timerId);
   timerId=0;
   renderLives();
@@ -161,6 +200,41 @@ updateRocks=function(dt,currentTime){
     const rawRect=rock.getBoundingClientRect();
     if(rawRect.right<areaRect.left-70||rawRect.left>areaRect.right+70)rock.remove();
   });
+};
+
+/* Good mood now has a direct adventure benefit without changing star collection itself. */
+const collectStarBeforeCareCondition=collectStar;
+collectStar=function(star,now){
+  const scoreBefore=score;
+  collectStarBeforeCareCondition(star,now);
+  if(!careConditionAvailable())return;
+
+  const gained=Math.max(0,score-scoreBefore);
+  const multiplier=moodScoreMultiplier(careRunMood);
+  if(gained<=0||multiplier<=1)return;
+
+  careMoodBonusCarry+=gained*(multiplier-1);
+  const bonus=Math.floor(careMoodBonusCarry);
+  if(bonus<=0)return;
+
+  careMoodBonusCarry-=bonus;
+  score+=bonus;
+  scoreDisplay.textContent=`SCORE ${score}`;
+};
+
+/* One adventure makes Tiranon hungry and a little tired, creating a care -> adventure loop. */
+const endGameBeforeCareCondition=endGame;
+endGame=function(){
+  const shouldSpendCare=careConditionAvailable();
+  endGameBeforeCareCondition();
+  if(!shouldSpendCare)return;
+
+  const now=Date.now();
+  careState.hunger=Math.max(0,careState.hunger-10);
+  careState.mood=Math.max(0,careState.mood-6);
+  careState.hungerAt=now;
+  careState.moodAt=now;
+  if(typeof saveCareState==="function")saveCareState();
 };
 
 /* Permanent shop: replace Clock with Heart. */
