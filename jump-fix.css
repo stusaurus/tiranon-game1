@@ -1,0 +1,5 @@
+.player.is-jumping .player__sprite {
+  clip-path: none;
+  transform: scale(1.15);
+  transform-origin: 50% 50%;
+}
