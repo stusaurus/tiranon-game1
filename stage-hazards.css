@@ -1,0 +1,86 @@
+.danger-star {
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  border:3px solid rgba(255,185,190,.95);
+  border-radius:50%;
+  color:#3f1b52;
+  background:radial-gradient(circle at 50% 45%,#ff6b74 0 18%,#812f82 19% 52%,#2e163a 53% 100%);
+  box-shadow:0 0 8px rgba(255,92,114,.85),0 0 18px rgba(91,34,108,.56),0 4px 8px rgba(0,0,0,.2);
+  font-size:34px;
+  font-weight:1000;
+  line-height:1;
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
+  pointer-events:none;
+  animation:danger-spin .55s linear infinite;
+}
+.danger-star::after {
+  position:absolute;
+  width:8px;
+  height:8px;
+  content:"";
+  border-radius:50%;
+  background:#ff2938;
+  box-shadow:0 0 8px #ff2938;
+}
+@keyframes danger-spin { to { rotate:360deg; } }
+
+.air-hazard {
+  position:absolute;
+  left:0;
+  bottom:calc(15.5% + 148px);
+  z-index:9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:46px;
+  height:46px;
+  font-size:40px;
+  line-height:1;
+  filter:drop-shadow(0 4px 3px rgba(69,38,8,.3));
+  pointer-events:none;
+  user-select:none;
+}
+
+.air-warning {
+  position:absolute;
+  bottom:calc(15.5% + 154px);
+  z-index:18;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
+  border:3px solid #fff7d7;
+  border-radius:50%;
+  color:#fff;
+  background:#e64c3d;
+  box-shadow:0 0 12px rgba(255,88,67,.7),0 4px 8px rgba(0,0,0,.16);
+  font-size:25px;
+  font-weight:1000;
+  pointer-events:none;
+  animation:air-warning-pulse .28s ease-in-out infinite alternate;
+}
+.air-warning--left { left:7px; }
+.air-warning--right { right:7px; }
+@keyframes air-warning-pulse {
+  from { transform:scale(.9); opacity:.78; }
+  to { transform:scale(1.08); opacity:1; }
+}
+
+@media (max-width:520px) {
+  .danger-star { width:40px; height:40px; font-size:32px; }
+  .air-hazard { bottom:calc(15.5% + 142px); width:44px; height:44px; font-size:38px; }
+  .air-warning { bottom:calc(15.5% + 148px); width:34px; height:34px; font-size:23px; }
+}
+
+@media (max-height:700px) {
+  .air-hazard { bottom:calc(15.5% + 132px); }
+  .air-warning { bottom:calc(15.5% + 138px); }
+}
