@@ -1,0 +1,69 @@
+.life-display {
+  min-width:150px;
+  font-size:clamp(16px,3.4vw,25px) !important;
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+
+.life-hearts {
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:1px;
+  filter:drop-shadow(0 2px 1px rgba(99,29,29,.2));
+}
+
+.life-hearts__empty {
+  color:rgba(255,255,255,.68);
+  font-family:Arial,sans-serif;
+  font-size:1.05em;
+  text-shadow:0 1px 0 rgba(74,109,118,.22);
+}
+
+.game-item--clock {
+  color:#e84665;
+  background:linear-gradient(145deg,#fff,#ffe5eb);
+  border-color:#ffc3d0;
+  box-shadow:
+    0 6px 12px rgba(87,39,53,.22),
+    0 0 14px rgba(255,238,242,.98),
+    0 0 25px rgba(255,102,137,.5),
+    inset 0 -4px 0 rgba(121,46,66,.1);
+}
+
+.life-popup {
+  position:absolute;
+  z-index:24;
+  padding:8px 13px;
+  border:3px solid rgba(255,255,255,.94);
+  border-radius:999px;
+  color:#fff;
+  background:rgba(217,63,89,.92);
+  box-shadow:0 6px 15px rgba(75,22,36,.2),0 0 12px rgba(255,255,255,.35);
+  font-size:21px;
+  font-weight:1000;
+  white-space:nowrap;
+  pointer-events:none;
+  animation:life-popup .76s ease-out forwards;
+}
+
+.life-popup--heal {
+  background:rgba(224,68,100,.94);
+}
+
+.life-popup--damage {
+  background:rgba(142,51,64,.94);
+}
+
+@keyframes life-popup {
+  0% { opacity:0; transform:translate(-50%,10px) scale(.65); }
+  25% { opacity:1; transform:translate(-50%,0) scale(1.15); }
+  62% { opacity:1; transform:translate(-50%,-10px) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-36px) scale(.94); }
+}
+
+@media (max-width:520px) {
+  .life-display { min-width:118px; font-size:17px !important; }
+  .life-hearts { gap:0; }
+  .life-popup { font-size:18px; padding:7px 11px; }
+}
