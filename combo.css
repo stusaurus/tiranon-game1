@@ -65,17 +65,53 @@
   68% { transform:translate(-50%,-50%) scale(.98) rotate(0); }
   100% { opacity:0; transform:translate(-50%,-58%) scale(1.05); }
 }
+
+.fever-active::before {
+  position:absolute;
+  top:132px;
+  left:50%;
+  z-index:13;
+  content:"FEVER!";
+  padding:6px 16px;
+  border:2px solid rgba(255,255,255,.86);
+  border-radius:999px;
+  color:#fffbd0;
+  background:rgba(216,126,0,.78);
+  box-shadow:0 4px 12px rgba(110,71,0,.22);
+  font-size:clamp(17px,4vw,25px);
+  font-weight:1000;
+  letter-spacing:.05em;
+  text-shadow:0 2px 0 #b96300,0 0 7px #fff4a6;
+  transform:translateX(-50%);
+  pointer-events:none;
+  animation:fever-badge .55s ease-in-out infinite alternate;
+}
+@keyframes fever-badge {
+  from { transform:translateX(-50%) scale(.96); }
+  to { transform:translateX(-50%) scale(1.05); }
+}
+
 .fever-active::after {
   position:absolute;
   inset:0;
   z-index:4;
   content:"";
   pointer-events:none;
-  background:radial-gradient(circle at center,rgba(255,250,151,.16),rgba(255,224,53,.05) 45%,transparent 70%);
-  animation:fever-flash .22s ease-in-out 4 alternate;
+  background:
+    radial-gradient(circle at 18% 22%,rgba(255,255,255,.42) 0 3px,transparent 4px),
+    radial-gradient(circle at 82% 30%,rgba(255,244,110,.4) 0 4px,transparent 5px),
+    radial-gradient(circle at 35% 56%,rgba(255,255,255,.34) 0 3px,transparent 4px),
+    radial-gradient(circle at 72% 68%,rgba(255,229,72,.32) 0 4px,transparent 5px),
+    radial-gradient(circle at center,rgba(255,250,151,.14),rgba(255,224,53,.04) 48%,transparent 72%);
+  animation:fever-flash .55s ease-in-out infinite alternate;
 }
-@keyframes fever-flash { from { opacity:.25; } to { opacity:1; } }
+@keyframes fever-flash { from { opacity:.36; } to { opacity:1; } }
+
+.fever-active .star--gold {
+  animation-duration:.3s;
+}
 
 @media (max-width:520px) {
   .combo-display { top:88px; }
+  .fever-active::before { top:126px; }
 }
