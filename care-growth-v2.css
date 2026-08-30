@@ -91,6 +91,31 @@
 .home-room--care .home-tiranon{margin-bottom:32px!important;}
 .home-room--care .home-tiranon--paper{mix-blend-mode:multiply;filter:drop-shadow(0 7px 3px rgba(59,39,25,.12)) saturate(.96);}
 
+/* 卵期は「食べる・遊ぶ」ではなく、孵化のためのお世話に見せる。 */
+.home-prebirth .home-care-card{
+  background:linear-gradient(180deg,rgba(255,253,241,.96),rgba(255,247,218,.94));
+  border-color:#f3dfaa;
+}
+.home-prebirth .care-track{background:#f5e7bd;}
+.home-prebirth .care-track i{background:linear-gradient(90deg,#ffd66c,#f2a742);}
+.home-prebirth .care-track--mood{background:#e8f1d6;}
+.home-prebirth .care-track--mood i{background:linear-gradient(90deg,#b6dc72,#73be6c);}
+.home-care-actions button:disabled{
+  opacity:.52;
+  filter:grayscale(.35);
+  box-shadow:0 2px 0 #d8d0c0;
+  transform:none;
+}
+.home-prebirth .home-care-actions button:first-child{
+  border-color:#f0d596;
+  background:linear-gradient(180deg,#fff8da,#ffe7a8);
+  box-shadow:0 4px 0 #ddb768,0 6px 10px rgba(95,68,29,.1);
+}
+.home-prebirth .home-play-button{
+  background:linear-gradient(145deg,#74b85d,#4b8f52);
+  box-shadow:0 5px 0 #3c7544,0 7px 11px rgba(0,0,0,.14);
+}
+
 @media (max-width:520px){
   .evolution-glow{width:165px;height:165px;}
   .evolution-glow img{max-width:145px;max-height:145px;}
