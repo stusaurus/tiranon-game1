@@ -1,6 +1,6 @@
 "use strict";
 
-/* 育成用の卵。おもちゃ・家具用の卵はここでは使わない。 */
+/* 育成用の卵は、GitHubに元からあるこの素材だけを使う。 */
 const PREBIRTH_EGG_IMAGE="50DFE3E9-7F3D-4F43-904D-80FCC956FE8D.jpeg";
 const BIRTH_MOMENT_IMAGE="CD0AD315-5B4E-41A6-810F-89806D5C27F3.jpeg";
 
@@ -9,23 +9,16 @@ if(typeof CARE_GROWTH_V2_STAGES!=="undefined"){
   CARE_GROWTH_V2_STAGES[1].image=PREBIRTH_EGG_IMAGE;
 }
 
-const eggCracks=document.createElement("div");
-eggCracks.className="egg-cracks";
-eggCracks.setAttribute("aria-hidden","true");
-eggCracks.innerHTML="<i></i><i></i><i></i><i></i>";
-if(typeof homeRoom!=="undefined"&&homeRoom)homeRoom.appendChild(eggCracks);
-
 function applyPrebirthVisualFix(){
   if(typeof careGrowthV2==="undefined")return;
   const preBirth=careGrowthV2.stageIndex<2;
-  const cracked=careGrowthV2.stageIndex===1;
 
   homeScreen?.classList.toggle("home-prebirth-fixed",preBirth);
-  homeRoom?.classList.toggle("home-egg-cracked",cracked);
+  homeRoom?.classList.remove("home-egg-cracked");
 
   if(preBirth&&homeTiranon){
-    homeTiranon.src=`${PREBIRTH_EGG_IMAGE}?v=20260830-eggfix2`;
-    homeTiranon.dataset.growth=cracked?"hatch":"egg";
+    homeTiranon.src=`${PREBIRTH_EGG_IMAGE}?v=20260830-restore`;
+    homeTiranon.dataset.growth="egg";
     homeTiranon.classList.add("home-egg-visual");
     homeTiranon.alt="ティラノンのたまご";
   }else{
@@ -52,14 +45,12 @@ renderHome=function(){
   applyPrebirthVisualFix();
 };
 
-/* 誕生前はティラノンLvを上げない。EXPは誕生後からスタート。 */
 const addPetExpBeforePrebirthFix=addPetExp;
 addPetExp=function(amount){
   if(typeof careGrowthV2!=="undefined"&&careGrowthV2.stageIndex<2)return false;
   return addPetExpBeforePrebirthFix(amount);
 };
 
-/* 「誕生」の瞬間だけ殻から顔を出す絵を見せる。通常表示には使わない。 */
 const maybeShowEvolutionBeforePrebirthFix=maybeShowEvolution;
 maybeShowEvolution=function(){
   maybeShowEvolutionBeforePrebirthFix();
@@ -68,7 +59,6 @@ maybeShowEvolution=function(){
   }
 };
 
-/* 生まれた瞬間にティラノンLv.1として育成を開始する。 */
 const tryAdvanceGrowthBeforePrebirthFix=tryAdvanceGrowthV2;
 tryAdvanceGrowthV2=function(){
   const before=careGrowthV2.stageIndex;
@@ -84,7 +74,6 @@ tryAdvanceGrowthV2=function(){
   return advanced;
 };
 
-/* 結果画面も誕生前だけEXPではなく、たまごの育成として表示する。 */
 const endGameBeforePrebirthFix=endGame;
 endGame=function(){
   const wasPreBirth=typeof careGrowthV2!=="undefined"&&careGrowthV2.stageIndex<2;
