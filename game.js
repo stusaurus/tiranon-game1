@@ -11,15 +11,21 @@ const finalScoreDisplay=document.getElementById("final-score");
 const restartButton=document.getElementById("restart-button");
 const controls=document.querySelector(".controls");
 const leftButton=document.getElementById("left-button");
+const jumpButton=document.getElementById("jump-button");
 const rightButton=document.getElementById("right-button");
+const controlButtons=[leftButton,jumpButton,rightButton].filter(Boolean);
 
 const GAME_TIME=30;
 const PLAYER_SPEED=320;
 const STAR_SPEED=165;
 const STAR_INTERVAL=700;
+const ROCK_SPEED=205;
+const ROCK_INTERVAL=2200;
+const JUMP_VELOCITY=580;
+const JUMP_GRAVITY=1500;
 const PLAYER_EDGE_MARGIN=8;
 const STAR_CONTROL_CLEARANCE=14;
-const ASSET_VERSION="20260830-1032";
+const ASSET_VERSION="20260830-v2";
 const PLAYER_IMAGES={
   front:`IMG_1796.png?v=${ASSET_VERSION}`,
   right:`IMG_1792.png?v=${ASSET_VERSION}`,
@@ -37,8 +43,13 @@ let isPlaying=false;
 let animationId=0;
 let timerId=0;
 let starTimerId=0;
+let rockTimerId=0;
 let previousTime=0;
 let currentDirection="front";
+let jumpHeight=0;
+let jumpVelocity=0;
+let isJumping=false;
+let invincibleUntil=0;
 
 function setPlayerImage(direction){
   const nextDirection=PLAYER_IMAGES[direction]?direction:"front";
@@ -68,6 +79,9 @@ function clampPlayerX(){
 
 function resetPlayerPosition(){
   playerX=(playArea.clientWidth-player.offsetWidth)/2;
+  jumpHeight=0;
+  jumpVelocity=0;
+  isJumping=false;
   currentDirection="";
   setPlayerImage("front");
   clampPlayerX();
@@ -76,7 +90,26 @@ function resetPlayerPosition(){
 
 function drawPlayer(){
   player.style.left=`${playerX}px`;
-  player.style.transform="none";
+  player.style.transform=`translateY(${-jumpHeight}px)`;
+}
+
+function jump(){
+  if(!isPlaying||isJumping)return;
+  isJumping=true;
+  jumpVelocity=JUMP_VELOCITY;
+  player.classList.add("is-jumping");
+}
+
+function updateJump(dt){
+  if(!isJumping)return;
+  jumpHeight+=jumpVelocity*dt;
+  jumpVelocity-=JUMP_GRAVITY*dt;
+  if(jumpHeight<=0){
+    jumpHeight=0;
+    jumpVelocity=0;
+    isJumping=false;
+    player.classList.remove("is-jumping");
+  }
 }
 
 function createStar(){
@@ -92,15 +125,33 @@ function createStar(){
   playArea.appendChild(star);
 }
 
+function createRock(){
+  if(!isPlaying)return;
+  const rock=document.createElement("div");
+  rock.className="rock";
+  rock.setAttribute("aria-hidden","true");
+  const fromLeft=Math.random()<.5;
+  rock.dataset.direction=fromLeft?"1":"-1";
+  rock.dataset.speed=String(ROCK_SPEED*(.88+Math.random()*.28));
+  rock.dataset.x=String(fromLeft?-60:playArea.clientWidth+14);
+  rock.dataset.rotation=String(Math.random()*24-12);
+  rock.style.transform=`translateX(${rock.dataset.x}px) rotate(${rock.dataset.rotation}deg)`;
+  playArea.appendChild(rock);
+}
+
 function rectanglesOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;}
 
 function expandedRect(element,margin){
   const rect=element.getBoundingClientRect();
+  return {left:rect.left-margin,right:rect.right+margin,top:rect.top-margin,bottom:rect.bottom+margin};
+}
+
+function insetRect(rect,horizontal,vertical){
   return {
-    left:rect.left-margin,
-    right:rect.right+margin,
-    top:rect.top-margin,
-    bottom:rect.bottom+margin
+    left:rect.left+horizontal,
+    right:rect.right-horizontal,
+    top:rect.top+vertical,
+    bottom:rect.bottom-vertical
   };
 }
 
@@ -114,11 +165,23 @@ function showPointPopup(star){
   setTimeout(()=>popup.remove(),650);
 }
 
+function showDamagePopup(){
+  const popup=document.createElement("div");
+  popup.className="damage-popup";
+  popup.textContent="-1";
+  const rect=player.getBoundingClientRect();
+  const areaRect=playArea.getBoundingClientRect();
+  popup.style.left=`${rect.left-areaRect.left+rect.width/2-18}px`;
+  popup.style.top=`${rect.top-areaRect.top-8}px`;
+  playArea.appendChild(popup);
+  setTimeout(()=>popup.remove(),700);
+}
+
 function updateStars(dt){
   const playerRect=player.getBoundingClientRect();
   const controlsVisible=controls&&getComputedStyle(controls).display!=="none";
   const controlSafeRects=controlsVisible
-    ? [leftButton,rightButton].map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE))
+    ? controlButtons.map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE))
     : [];
 
   playArea.querySelectorAll(".star").forEach(star=>{
@@ -144,6 +207,36 @@ function updateStars(dt){
   });
 }
 
+function updateRocks(dt,currentTime){
+  const playerHitbox=insetRect(player.getBoundingClientRect(),24,10);
+  const areaRect=playArea.getBoundingClientRect();
+
+  playArea.querySelectorAll(".rock").forEach(rock=>{
+    const direction=Number(rock.dataset.direction);
+    const speed=Number(rock.dataset.speed);
+    const nextX=Number(rock.dataset.x)+direction*speed*dt;
+    const rotation=Number(rock.dataset.rotation)+direction*90*dt;
+    rock.dataset.x=String(nextX);
+    rock.dataset.rotation=String(rotation);
+    rock.style.transform=`translateX(${nextX}px) rotate(${rotation}deg)`;
+
+    const rockRect=insetRect(rock.getBoundingClientRect(),6,4);
+    if(currentTime>=invincibleUntil&&rectanglesOverlap(playerHitbox,rockRect)){
+      score=Math.max(0,score-1);
+      scoreDisplay.textContent=`SCORE ${score}`;
+      showDamagePopup();
+      invincibleUntil=currentTime+900;
+      player.classList.add("is-hit");
+      setTimeout(()=>player.classList.remove("is-hit"),900);
+      rock.remove();
+      return;
+    }
+
+    const rawRect=rock.getBoundingClientRect();
+    if(rawRect.right<areaRect.left-70||rawRect.left>areaRect.right+70)rock.remove();
+  });
+}
+
 function refreshPlayerDirection(){
   if(movingLeft&&!movingRight)setPlayerImage("left");
   else if(movingRight&&!movingLeft)setPlayerImage("right");
@@ -157,9 +250,11 @@ function gameLoop(currentTime){
   if(movingLeft)playerX-=PLAYER_SPEED*dt;
   if(movingRight)playerX+=PLAYER_SPEED*dt;
   clampPlayerX();
+  updateJump(dt);
   refreshPlayerDirection();
   drawPlayer();
   updateStars(dt);
+  updateRocks(dt,currentTime);
   animationId=requestAnimationFrame(gameLoop);
 }
 
@@ -171,6 +266,7 @@ function endGame(){
   cancelAnimationFrame(animationId);
   clearInterval(timerId);
   clearInterval(starTimerId);
+  clearInterval(rockTimerId);
   finalScoreDisplay.textContent=`最終スコア ${score}`;
   gameOverScreen.hidden=false;
 }
@@ -179,11 +275,14 @@ function startGame(){
   cancelAnimationFrame(animationId);
   clearInterval(timerId);
   clearInterval(starTimerId);
-  playArea.querySelectorAll(".star, .point-popup").forEach(item=>item.remove());
+  clearInterval(rockTimerId);
+  playArea.querySelectorAll(".star, .rock, .point-popup, .damage-popup").forEach(item=>item.remove());
   score=0;
   timeLeft=GAME_TIME;
   movingLeft=false;
   movingRight=false;
+  invincibleUntil=0;
+  player.classList.remove("is-hit","is-jumping");
   scoreDisplay.textContent="SCORE 0";
   timeDisplay.textContent=`TIME ${GAME_TIME}`;
   gameOverScreen.hidden=true;
@@ -191,6 +290,8 @@ function startGame(){
   isPlaying=true;
   createStar();
   starTimerId=setInterval(createStar,STAR_INTERVAL);
+  rockTimerId=setInterval(createRock,ROCK_INTERVAL);
+  setTimeout(()=>{if(isPlaying)createRock();},900);
   timerId=setInterval(()=>{
     timeLeft--;
     timeDisplay.textContent=`TIME ${timeLeft}`;
@@ -201,9 +302,10 @@ function startGame(){
 }
 
 window.addEventListener("keydown",event=>{
-  if(["ArrowLeft","ArrowRight","KeyA","KeyD"].includes(event.code))event.preventDefault();
+  if(["ArrowLeft","ArrowRight","ArrowUp","Space","KeyA","KeyD","KeyW"].includes(event.code))event.preventDefault();
   if(event.code==="ArrowLeft"||event.code==="KeyA")movingLeft=true;
   if(event.code==="ArrowRight"||event.code==="KeyD")movingRight=true;
+  if(!event.repeat&&(event.code==="ArrowUp"||event.code==="Space"||event.code==="KeyW"))jump();
   refreshPlayerDirection();
 });
 
@@ -219,10 +321,14 @@ window.addEventListener("blur",()=>{
   refreshPlayerDirection();
 });
 
-function addHoldControls(button,direction){
+function preventButtonGestures(button){
   ["contextmenu","selectstart","dragstart"].forEach(type=>{
     button.addEventListener(type,event=>event.preventDefault());
   });
+}
+
+function addHoldControls(button,direction){
+  preventButtonGestures(button);
   button.addEventListener("pointerdown",event=>{
     event.preventDefault();
     if(button.setPointerCapture)button.setPointerCapture(event.pointerId);
@@ -243,14 +349,20 @@ function addHoldControls(button,direction){
 addHoldControls(leftButton,"left");
 addHoldControls(rightButton,"right");
 
+if(jumpButton){
+  preventButtonGestures(jumpButton);
+  jumpButton.addEventListener("pointerdown",event=>{
+    event.preventDefault();
+    jump();
+  });
+}
+
 // iPhone Safariのダブルタップ拡大をゲーム画面では無効化する。
 game.addEventListener("dblclick",event=>event.preventDefault());
 let lastTouchEnd=0;
 game.addEventListener("touchend",event=>{
   const now=Date.now();
-  if(now-lastTouchEnd<350){
-    event.preventDefault();
-  }
+  if(now-lastTouchEnd<350)event.preventDefault();
   lastTouchEnd=now;
 },{passive:false});
 
