@@ -25,14 +25,21 @@ const JUMP_VELOCITY=580;
 const JUMP_GRAVITY=1500;
 const PLAYER_EDGE_MARGIN=8;
 const STAR_CONTROL_CLEARANCE=14;
-const ASSET_VERSION="20260830-v2";
+const ASSET_VERSION="20260830-v3";
 const PLAYER_IMAGES={
-  front:`IMG_1796.png?v=${ASSET_VERSION}`,
-  right:`IMG_1792.png?v=${ASSET_VERSION}`,
-  left:`IMG_1786.png?v=${ASSET_VERSION}`
+  normal:{
+    front:`IMG_1796.png?v=${ASSET_VERSION}`,
+    right:`IMG_1792.png?v=${ASSET_VERSION}`,
+    left:`IMG_1786.png?v=${ASSET_VERSION}`
+  },
+  jump:{
+    front:`assets/tiranon-jump-front.png?v=${ASSET_VERSION}`,
+    right:`assets/tiranon-jump-right.png?v=${ASSET_VERSION}`,
+    left:`assets/tiranon-jump-left.png?v=${ASSET_VERSION}`
+  }
 };
 
-Object.values(PLAYER_IMAGES).forEach(src=>{const img=new Image();img.src=src;});
+Object.values(PLAYER_IMAGES).flatMap(group=>Object.values(group)).forEach(src=>{const img=new Image();img.src=src;});
 
 let score=0;
 let timeLeft=GAME_TIME;
@@ -45,44 +52,44 @@ let timerId=0;
 let starTimerId=0;
 let rockTimerId=0;
 let previousTime=0;
-let currentDirection="front";
+let currentSpriteKey="";
 let jumpHeight=0;
 let jumpVelocity=0;
 let isJumping=false;
 let invincibleUntil=0;
 
-function setPlayerImage(direction){
-  const nextDirection=PLAYER_IMAGES[direction]?direction:"front";
-  if(currentDirection===nextDirection && playerSprite.getAttribute("src")) return;
-  currentDirection=nextDirection;
+function requestedDirection(){
+  if(movingLeft&&!movingRight)return "left";
+  if(movingRight&&!movingLeft)return "right";
+  return "front";
+}
+
+function setPlayerImage(direction=requestedDirection()){
+  const pose=isJumping?"jump":"normal";
+  const dir=PLAYER_IMAGES[pose][direction]?direction:"front";
+  const key=`${pose}-${dir}`;
+  if(currentSpriteKey===key&&playerSprite.getAttribute("src"))return;
+  currentSpriteKey=key;
   player.classList.remove("image-error");
-  playerSprite.setAttribute("src",PLAYER_IMAGES[nextDirection]);
+  playerSprite.setAttribute("src",PLAYER_IMAGES[pose][dir]);
 }
 
 playerSprite.addEventListener("load",()=>player.classList.remove("image-error"));
 playerSprite.addEventListener("error",()=>{
-  if(currentDirection!=="front"){
-    currentDirection="front";
-    playerSprite.setAttribute("src",PLAYER_IMAGES.front);
-  }else{
-    player.classList.add("image-error");
-  }
+  currentSpriteKey="normal-front";
+  playerSprite.setAttribute("src",PLAYER_IMAGES.normal.front);
+  if(playerSprite.complete&&playerSprite.naturalWidth===0)player.classList.add("image-error");
 });
 
-function playerMaxX(){
-  return Math.max(PLAYER_EDGE_MARGIN,playArea.clientWidth-player.offsetWidth-PLAYER_EDGE_MARGIN);
-}
-
-function clampPlayerX(){
-  playerX=Math.max(PLAYER_EDGE_MARGIN,Math.min(playerX,playerMaxX()));
-}
+function playerMaxX(){return Math.max(PLAYER_EDGE_MARGIN,playArea.clientWidth-player.offsetWidth-PLAYER_EDGE_MARGIN);}
+function clampPlayerX(){playerX=Math.max(PLAYER_EDGE_MARGIN,Math.min(playerX,playerMaxX()));}
 
 function resetPlayerPosition(){
   playerX=(playArea.clientWidth-player.offsetWidth)/2;
   jumpHeight=0;
   jumpVelocity=0;
   isJumping=false;
-  currentDirection="";
+  currentSpriteKey="";
   setPlayerImage("front");
   clampPlayerX();
   drawPlayer();
@@ -98,6 +105,7 @@ function jump(){
   isJumping=true;
   jumpVelocity=JUMP_VELOCITY;
   player.classList.add("is-jumping");
+  setPlayerImage(requestedDirection());
 }
 
 function updateJump(dt){
@@ -140,20 +148,8 @@ function createRock(){
 }
 
 function rectanglesOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;}
-
-function expandedRect(element,margin){
-  const rect=element.getBoundingClientRect();
-  return {left:rect.left-margin,right:rect.right+margin,top:rect.top-margin,bottom:rect.bottom+margin};
-}
-
-function insetRect(rect,horizontal,vertical){
-  return {
-    left:rect.left+horizontal,
-    right:rect.right-horizontal,
-    top:rect.top+vertical,
-    bottom:rect.bottom-vertical
-  };
-}
+function expandedRect(element,margin){const r=element.getBoundingClientRect();return{left:r.left-margin,right:r.right+margin,top:r.top-margin,bottom:r.bottom+margin};}
+function insetRect(rect,horizontal,vertical){return{left:rect.left+horizontal,right:rect.right-horizontal,top:rect.top+vertical,bottom:rect.bottom-vertical};}
 
 function showPointPopup(star){
   const popup=document.createElement("div");
@@ -180,16 +176,12 @@ function showDamagePopup(){
 function updateStars(dt){
   const playerRect=player.getBoundingClientRect();
   const controlsVisible=controls&&getComputedStyle(controls).display!=="none";
-  const controlSafeRects=controlsVisible
-    ? controlButtons.map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE))
-    : [];
-
+  const controlSafeRects=controlsVisible?controlButtons.map(button=>expandedRect(button,STAR_CONTROL_CLEARANCE)):[];
   playArea.querySelectorAll(".star").forEach(star=>{
     const nextY=Number(star.dataset.y)+STAR_SPEED*dt;
     star.dataset.y=String(nextY);
     star.style.transform=`translate(${star.dataset.x}px, ${nextY}px)`;
     const starRect=star.getBoundingClientRect();
-
     if(rectanglesOverlap(playerRect,starRect)){
       score++;
       scoreDisplay.textContent=`SCORE ${score}`;
@@ -197,12 +189,7 @@ function updateStars(dt){
       star.remove();
       return;
     }
-
-    if(controlSafeRects.some(rect=>rectanglesOverlap(starRect,rect))){
-      star.remove();
-      return;
-    }
-
+    if(controlSafeRects.some(rect=>rectanglesOverlap(starRect,rect))){star.remove();return;}
     if(starRect.top>=game.getBoundingClientRect().bottom)star.remove();
   });
 }
@@ -210,7 +197,6 @@ function updateStars(dt){
 function updateRocks(dt,currentTime){
   const playerHitbox=insetRect(player.getBoundingClientRect(),24,10);
   const areaRect=playArea.getBoundingClientRect();
-
   playArea.querySelectorAll(".rock").forEach(rock=>{
     const direction=Number(rock.dataset.direction);
     const speed=Number(rock.dataset.speed);
@@ -219,7 +205,6 @@ function updateRocks(dt,currentTime){
     rock.dataset.x=String(nextX);
     rock.dataset.rotation=String(rotation);
     rock.style.transform=`translateX(${nextX}px) rotate(${rotation}deg)`;
-
     const rockRect=insetRect(rock.getBoundingClientRect(),6,4);
     if(currentTime>=invincibleUntil&&rectanglesOverlap(playerHitbox,rockRect)){
       score=Math.max(0,score-1);
@@ -231,17 +216,12 @@ function updateRocks(dt,currentTime){
       rock.remove();
       return;
     }
-
     const rawRect=rock.getBoundingClientRect();
     if(rawRect.right<areaRect.left-70||rawRect.left>areaRect.right+70)rock.remove();
   });
 }
 
-function refreshPlayerDirection(){
-  if(movingLeft&&!movingRight)setPlayerImage("left");
-  else if(movingRight&&!movingLeft)setPlayerImage("right");
-  else setPlayerImage("front");
-}
+function refreshPlayerDirection(){setPlayerImage(requestedDirection());}
 
 function gameLoop(currentTime){
   if(!isPlaying)return;
@@ -262,7 +242,13 @@ function endGame(){
   isPlaying=false;
   movingLeft=false;
   movingRight=false;
+  isJumping=false;
+  jumpHeight=0;
+  jumpVelocity=0;
+  player.classList.remove("is-jumping");
+  currentSpriteKey="";
   setPlayerImage("front");
+  drawPlayer();
   cancelAnimationFrame(animationId);
   clearInterval(timerId);
   clearInterval(starTimerId);
@@ -315,18 +301,9 @@ window.addEventListener("keyup",event=>{
   refreshPlayerDirection();
 });
 
-window.addEventListener("blur",()=>{
-  movingLeft=false;
-  movingRight=false;
-  refreshPlayerDirection();
-});
+window.addEventListener("blur",()=>{movingLeft=false;movingRight=false;refreshPlayerDirection();});
 
-function preventButtonGestures(button){
-  ["contextmenu","selectstart","dragstart"].forEach(type=>{
-    button.addEventListener(type,event=>event.preventDefault());
-  });
-}
-
+function preventButtonGestures(button){["contextmenu","selectstart","dragstart"].forEach(type=>button.addEventListener(type,event=>event.preventDefault()));}
 function addHoldControls(button,direction){
   preventButtonGestures(button);
   button.addEventListener("pointerdown",event=>{
@@ -348,16 +325,11 @@ function addHoldControls(button,direction){
 
 addHoldControls(leftButton,"left");
 addHoldControls(rightButton,"right");
-
 if(jumpButton){
   preventButtonGestures(jumpButton);
-  jumpButton.addEventListener("pointerdown",event=>{
-    event.preventDefault();
-    jump();
-  });
+  jumpButton.addEventListener("pointerdown",event=>{event.preventDefault();jump();});
 }
 
-// iPhone Safariのダブルタップ拡大をゲーム画面では無効化する。
 game.addEventListener("dblclick",event=>event.preventDefault());
 let lastTouchEnd=0;
 game.addEventListener("touchend",event=>{
@@ -367,15 +339,9 @@ game.addEventListener("touchend",event=>{
 },{passive:false});
 
 [game,playArea,player].forEach(element=>{
-  ["contextmenu","selectstart","dragstart"].forEach(type=>{
-    element.addEventListener(type,event=>event.preventDefault());
-  });
+  ["contextmenu","selectstart","dragstart"].forEach(type=>element.addEventListener(type,event=>event.preventDefault()));
 });
 
-window.addEventListener("resize",()=>{
-  clampPlayerX();
-  drawPlayer();
-});
-
+window.addEventListener("resize",()=>{clampPlayerX();drawPlayer();});
 restartButton.addEventListener("click",startGame);
 startGame();
