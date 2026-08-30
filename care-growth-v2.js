@@ -400,6 +400,150 @@ homeReturnButton?.addEventListener("click",()=>setTimeout(()=>{
   maybeShowEvolution();
 },0));
 
+const GROWTH_TEST_QUERY_KEY="growth-test";
+const GROWTH_TEST_STAGE_CARE=[0,8,22,50,90];
+const GROWTH_TEST_STAGE_CLEARS=[0,1,3,7,12];
+
+function cloneGrowthTestValue(value){
+  return JSON.parse(JSON.stringify(value));
+}
+
+function restoreGrowthTestObject(target,snapshot){
+  Object.keys(target).forEach(key=>delete target[key]);
+  Object.assign(target,cloneGrowthTestValue(snapshot));
+}
+
+function enableGrowthTestMode(){
+  const growthSnapshot=cloneGrowthTestValue(careGrowthV2);
+  const careSnapshot=cloneGrowthTestValue(careState);
+  const petSnapshot=cloneGrowthTestValue(petState);
+  const progressionSnapshot=cloneGrowthTestValue(progressionState);
+
+  /* 確認中の操作は画面内だけに留め、本来のセーブを変更しない。 */
+  if(typeof Storage!=="undefined"){
+    const setItemBeforeGrowthTest=Storage.prototype.setItem;
+    const removeItemBeforeGrowthTest=Storage.prototype.removeItem;
+    const clearBeforeGrowthTest=Storage.prototype.clear;
+    Storage.prototype.setItem=function(key,value){
+      if(this===localStorage)return;
+      return setItemBeforeGrowthTest.call(this,key,value);
+    };
+    Storage.prototype.removeItem=function(key){
+      if(this===localStorage)return;
+      return removeItemBeforeGrowthTest.call(this,key);
+    };
+    Storage.prototype.clear=function(){
+      if(this===localStorage)return;
+      return clearBeforeGrowthTest.call(this);
+    };
+  }
+
+  const style=document.createElement("style");
+  style.textContent=`
+    .growth-test-launcher{position:fixed;z-index:10000;top:max(10px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);border:2px solid #fff;border-radius:999px;padding:8px 14px;background:#235f55;color:#fff;box-shadow:0 4px 16px rgba(24,73,65,.28);font:700 13px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap}
+    .growth-test-modal{position:fixed;z-index:10001;inset:0;display:grid;align-items:end;padding:16px max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:rgba(26,55,49,.42)}
+    .growth-test-modal[hidden]{display:none}
+    .growth-test-sheet{width:min(620px,100%);max-height:min(76vh,640px);margin:0 auto;overflow:auto;border:2px solid rgba(255,255,255,.9);border-radius:24px;background:#fffef8;box-shadow:0 18px 50px rgba(21,63,56,.32);padding:18px;color:#244f47;font-family:system-ui,-apple-system,sans-serif}
+    .growth-test-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+    .growth-test-head small{display:block;margin-bottom:3px;color:#5f8d83;font-size:11px;font-weight:800;letter-spacing:.08em}
+    .growth-test-head strong{display:block;font-size:20px}
+    .growth-test-close{flex:0 0 auto;width:38px;height:38px;border:0;border-radius:50%;background:#edf6f2;color:#285f55;font-size:24px;line-height:1}
+    .growth-test-note{margin:0 0 14px;color:#638178;font-size:12px;font-weight:700}
+    .growth-test-stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .growth-test-stage{min-height:58px;border:2px solid #d9ebe4;border-radius:15px;padding:9px 10px;background:#f6fbf8;color:#285f55;text-align:left}
+    .growth-test-stage span,.growth-test-stage strong{display:block}
+    .growth-test-stage span{margin-bottom:2px;color:#78968e;font-size:10px;font-weight:800}
+    .growth-test-stage strong{font-size:14px;line-height:1.35}
+    .growth-test-stage.is-active{border-color:#49b889;background:#e5f7ed;box-shadow:inset 0 0 0 1px #49b889}
+    .growth-test-exit{width:100%;margin-top:13px;border:0;border-radius:14px;padding:12px;background:#235f55;color:#fff;font-size:14px;font-weight:800}
+    @media (min-width:560px){.growth-test-stages{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  `;
+
+  const launcher=document.createElement("button");
+  launcher.type="button";
+  launcher.className="growth-test-launcher";
+  launcher.setAttribute("aria-haspopup","dialog");
+  launcher.innerHTML=`🧪 確認中：<span>${growthStage().name}</span>`;
+
+  const modal=document.createElement("section");
+  modal.className="growth-test-modal";
+  modal.setAttribute("role","dialog");
+  modal.setAttribute("aria-modal","true");
+  modal.setAttribute("aria-label","成長段階の動作確認");
+  modal.innerHTML=`
+    <div class="growth-test-sheet">
+      <div class="growth-test-head">
+        <div><small>GROWTH TEST</small><strong>成長段階の動作確認</strong></div>
+        <button class="growth-test-close" type="button" aria-label="確認メニューを閉じる">×</button>
+      </div>
+      <p class="growth-test-note">この画面でのお世話・冒険・買い物は保存されません。</p>
+      <div class="growth-test-stages"></div>
+      <button class="growth-test-exit" type="button">確認を終了して通常画面へ戻る</button>
+    </div>
+  `;
+  const stageList=modal.querySelector(".growth-test-stages");
+  const stageButtons=CARE_GROWTH_V2_STAGES.map((stage,index)=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="growth-test-stage";
+    button.innerHTML=`<span>段階 ${index+1}</span><strong>${stage.name}</strong>`;
+    stageList.appendChild(button);
+    return button;
+  });
+
+  function applyGrowthTestStage(index){
+    restoreGrowthTestObject(careGrowthV2,growthSnapshot);
+    restoreGrowthTestObject(careState,careSnapshot);
+    restoreGrowthTestObject(petState,petSnapshot);
+    restoreGrowthTestObject(progressionState,progressionSnapshot);
+
+    careGrowthV2.stageIndex=index;
+    careGrowthV2.carePoints=GROWTH_TEST_STAGE_CARE[index];
+    careGrowthV2.clears=GROWTH_TEST_STAGE_CLEARS[index];
+    careGrowthV2.inventory={banana:index>=2?3:0};
+    careGrowthV2.birthGiftGranted=index>=2;
+    careGrowthV2.pendingEvolution=-1;
+    careGrowthV2.lastPetPointAt=0;
+    careGrowthV2.lastWarmAt=0;
+    careGrowthV2.lastObserveAt=0;
+    petState.stage1Clears=GROWTH_TEST_STAGE_CLEARS[index];
+    careState.hunger=70;
+    careState.mood=70;
+    careState.hungerAt=Date.now();
+    careState.moodAt=Date.now();
+    careState.lastPetAt=0;
+    careState.lastPlayAt=0;
+
+    carePanel.hidden=true;
+    evolutionOverlay.hidden=true;
+    renderHome();
+    renderGrowthV2Progress();
+    renderLifePhaseActions();
+
+    launcher.querySelector("span").textContent=CARE_GROWTH_V2_STAGES[index].name;
+    stageButtons.forEach((button,buttonIndex)=>button.classList.toggle("is-active",buttonIndex===index));
+    modal.hidden=true;
+  }
+
+  stageButtons.forEach((button,index)=>button.addEventListener("click",()=>applyGrowthTestStage(index)));
+  stageButtons[careGrowthV2.stageIndex]?.classList.add("is-active");
+  launcher.addEventListener("click",()=>{modal.hidden=false;});
+  modal.querySelector(".growth-test-close").addEventListener("click",()=>{modal.hidden=true;});
+  modal.addEventListener("click",event=>{if(event.target===modal)modal.hidden=true;});
+  modal.querySelector(".growth-test-exit").addEventListener("click",()=>{
+    const normalUrl=new URL(location.href);
+    normalUrl.searchParams.delete(GROWTH_TEST_QUERY_KEY);
+    location.replace(normalUrl.href);
+  });
+
+  document.head.appendChild(style);
+  document.body.append(launcher,modal);
+}
+
+if(new URLSearchParams(location.search).get(GROWTH_TEST_QUERY_KEY)==="1"){
+  enableGrowthTestMode();
+}
+
 renderGrowthV2Progress();
 renderLifePhaseActions();
 saveGrowthV2();
