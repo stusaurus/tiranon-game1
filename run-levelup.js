@@ -1,12 +1,13 @@
 "use strict";
 
-const RUN_LEVEL_STAR_STEP=7;
+const RUN_LEVEL_STAR_TARGETS=[7,17,31,50,74];
 const RUN_SKILL_MAX=3;
 
 let runDraftPaused=false;
 let runStarsCollected=0;
 let runLevel=1;
-let runNextLevelAt=RUN_LEVEL_STAR_STEP;
+let runNextLevelIndex=0;
+let runNextLevelAt=RUN_LEVEL_STAR_TARGETS[runNextLevelIndex];
 let runPauseSnapshot=null;
 let runSkillLevels={
   starPower:0,
@@ -71,16 +72,29 @@ const RUN_SKILLS={
   }
 };
 
+function runCurrentTarget(){
+  return RUN_LEVEL_STAR_TARGETS[runNextLevelIndex]??null;
+}
+
 function runUpdateHud(){
-  const progress=Math.max(0,Math.min(RUN_LEVEL_STAR_STEP,RUN_LEVEL_STAR_STEP-(runNextLevelAt-runStarsCollected)));
-  runLevelHud.innerHTML=`<strong>RUN Lv.${runLevel}</strong><span>⭐ ${progress}/${RUN_LEVEL_STAR_STEP}</span>`;
+  const target=runCurrentTarget();
+  if(target===null){
+    runLevelHud.innerHTML=`<strong>RUN Lv.${runLevel}</strong><span>⭐ MAX</span>`;
+    return;
+  }
+
+  const previousTarget=runNextLevelIndex===0?0:RUN_LEVEL_STAR_TARGETS[runNextLevelIndex-1];
+  const needed=target-previousTarget;
+  const progress=Math.max(0,Math.min(needed,runStarsCollected-previousTarget));
+  runLevelHud.innerHTML=`<strong>RUN Lv.${runLevel}</strong><span>⭐ ${progress}/${needed}</span>`;
 }
 
 function runResetState(){
   runDraftPaused=false;
   runStarsCollected=0;
   runLevel=1;
-  runNextLevelAt=RUN_LEVEL_STAR_STEP;
+  runNextLevelIndex=0;
+  runNextLevelAt=RUN_LEVEL_STAR_TARGETS[runNextLevelIndex];
   runPauseSnapshot=null;
   runSkillLevels={starPower:0,magnetBoost:0,shieldBoost:0,clockBoost:0,feverBoost:0,comboBoost:0};
   runLevelOverlay.hidden=true;
@@ -201,7 +215,8 @@ function runChooseSkill(key){
   }
 
   runLevel++;
-  runNextLevelAt+=RUN_LEVEL_STAR_STEP;
+  runNextLevelIndex++;
+  runNextLevelAt=runCurrentTarget()??Infinity;
   runUpdateHud();
   runResumeGame();
 }
@@ -252,7 +267,7 @@ collectStar=function(star,now){
 
   runStarsCollected++;
   runUpdateHud();
-  if(runStarsCollected>=runNextLevelAt&&!runDraftPaused){
+  if(runNextLevelIndex<RUN_LEVEL_STAR_TARGETS.length&&runStarsCollected>=runNextLevelAt&&!runDraftPaused){
     setTimeout(()=>{if(isPlaying&&!runDraftPaused)runPauseGame();},0);
   }
 };
