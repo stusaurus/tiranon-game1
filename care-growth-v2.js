@@ -129,8 +129,9 @@ function renderGrowthV2Progress(){
     return;
   }
   const req=CARE_GROWTH_REQUIREMENTS[nextIndex];
-  growthV2Next.textContent=req.label;
-  growthV2Body.innerHTML=`<span>${isPreBirth()?"🔥":"🫶"} ${Math.min(careGrowthV2.carePoints,req.care)}/${req.care}</span><span>🌿 ${Math.min(careGrowthV2.clears,req.clears)}/${req.clears}回</span>`;
+  const careLabel=isPreBirth()?"あたため":"おせわ";
+  growthV2Next.textContent=`次の目標：${req.label}`;
+  growthV2Body.innerHTML=`<span>${careLabel} ${Math.min(careGrowthV2.carePoints,req.care)}/${req.care}</span><span>草原 ${Math.min(careGrowthV2.clears,req.clears)}/${req.clears}回</span>`;
 }
 
 function canGrowTo(nextIndex){
