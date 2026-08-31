@@ -432,7 +432,7 @@ restartButton.addEventListener("click",()=>{
     stageHud.hidden=false;
     renderStageHud();
   },0);
-});
+},{capture:true});
 
 /*
  * stage-hazards.js loads after this file. Patch it on the next task so:
