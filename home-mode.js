@@ -22,6 +22,25 @@ const ADVENTURE_ROUTES={
   night:{icon:"🌙",name:"星降る夜",description:"✹が多い・SCORE +30%",score:1.30,speed:1.10,fallDelay:.64,airDelay:1.02}
 };
 
+/* Keep timer-driven objects bounded when a mobile browser suspends animation frames. */
+const ADVENTURE_ENTITY_LIMITS={
+  ".star":10,
+  ".rock":6,
+  ".game-item":3,
+  ".game-coin":4
+};
+
+function adventureTrimExcessEntities(){
+  if(!stageActive)return;
+  Object.entries(ADVENTURE_ENTITY_LIMITS).forEach(([selector,limit])=>{
+    const elements=playArea.querySelectorAll(selector);
+    for(let index=0;index<elements.length-limit;index++)elements[index].remove();
+  });
+}
+
+const adventureEntityObserver=new MutationObserver(adventureTrimExcessEntities);
+adventureEntityObserver.observe(playArea,{childList:true});
+
 function defaultPetState(){
   return {level:1,exp:0,totalExp:0,stage1Clears:0};
 }
