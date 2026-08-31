@@ -1,0 +1,44 @@
+"use strict";
+(()=>{
+  const item=(window.TIRANON_COLLECTION_V2?.items||[]).find(x=>x.id==="volcano-fish");
+  if(!item)return;
+  item.name="きょうりゅうスタンプ";
+  item.slot="decor";
+  item.image="data:image/webp;base64,"+[
+    "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",
+  ].join("");
+  window.TIRANON_COLLECTION_V2?.render?.();
+  queueMicrotask(()=>window.TIRANON_ROOM_DECOR_V2?.render?.());
+})();
