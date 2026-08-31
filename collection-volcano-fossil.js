@@ -1,0 +1,43 @@
+"use strict";
+(()=>{
+  const item=(window.TIRANON_COLLECTION_V2?.items||[]).find(x=>x.id==="volcano-meat");
+  if(!item)return;
+  item.name="かせきパズル";
+  item.slot="decor";
+  item.image="data:image/webp;base64,"+[
+    "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",
+  ].join("");
+  window.TIRANON_COLLECTION_V2?.render?.();
+  queueMicrotask(()=>window.TIRANON_ROOM_DECOR_V2?.render?.());
+})();
