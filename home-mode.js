@@ -168,6 +168,65 @@ adventureRouteOverlay.innerHTML=`
 game.appendChild(adventureRouteOverlay);
 const adventureRouteChoices=adventureRouteOverlay.querySelector(".adventure-route-choices");
 
+/* Route themes use CSS only: no new image assets. */
+const adventureThemeStyle=document.createElement("style");
+adventureThemeStyle.textContent=`
+  .game{transition:background .62s ease,color .45s ease;}
+  .game .cloud{transition:opacity .55s ease,filter .55s ease;}
+  .adventure-atmosphere{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .55s ease;background-size:100% 100%;}
+  .adventure-atmosphere::before,.adventure-atmosphere::after{position:absolute;inset:-10%;content:"";pointer-events:none;}
+  .game.route-forest{background:linear-gradient(180deg,#75cda9 0%,#b9e7b0 66%,#4f9d52 66%,#286e36 100%);}
+  .game.route-forest .cloud{opacity:.56;filter:hue-rotate(55deg) saturate(.7);}
+  .game.route-forest .adventure-atmosphere{opacity:1;background:radial-gradient(circle at 12% 22%,rgba(35,110,48,.34) 0 4%,transparent 4.5%),radial-gradient(circle at 78% 34%,rgba(24,96,43,.28) 0 6%,transparent 6.5%),radial-gradient(circle at 48% 55%,rgba(255,240,145,.20),transparent 28%);}
+  .game.route-forest .adventure-atmosphere::before{content:"🍃    🍃       🍃";font-size:26px;letter-spacing:52px;opacity:.38;animation:route-leaves 6s linear infinite;}
+  .game.route-river{background:linear-gradient(180deg,#65cdea 0%,#bdeef4 57%,#66c7bf 57%,#3f9f9d 76%,#62b65b 76%,#2f8441 100%);}
+  .game.route-river .cloud{opacity:.84;filter:brightness(1.08);}
+  .game.route-river .adventure-atmosphere{opacity:1;background:repeating-linear-gradient(174deg,transparent 0 16px,rgba(255,255,255,.15) 17px 19px,transparent 20px 34px);animation:route-water 2.8s ease-in-out infinite alternate;}
+  .game.route-volcano{background:radial-gradient(circle at 50% 92%,rgba(255,116,40,.82),transparent 34%),linear-gradient(180deg,#845f64 0%,#bc7660 58%,#704233 58%,#3c2925 100%);}
+  .game.route-volcano .cloud{opacity:.16;filter:sepia(1) brightness(.65);}
+  .game.route-volcano .adventure-atmosphere{opacity:1;background:radial-gradient(circle at 22% 78%,rgba(255,195,75,.34) 0 2px,transparent 3px),radial-gradient(circle at 68% 62%,rgba(255,137,43,.40) 0 2px,transparent 3px),radial-gradient(circle at 82% 83%,rgba(255,214,104,.30) 0 3px,transparent 4px);background-size:88px 92px,120px 106px,150px 126px;animation:route-heat 1.4s ease-in-out infinite alternate;}
+  .game.route-night{background:linear-gradient(180deg,#111b48 0%,#25366f 61%,#234f43 61%,#17382c 100%);}
+  .game.route-night .cloud{opacity:.13;filter:brightness(.7) saturate(.5);}
+  .game.route-night .status{color:#fff;text-shadow:0 2px 3px rgba(0,0,0,.55);}
+  .game.route-volcano .status{color:#fff;text-shadow:0 2px 3px rgba(62,24,17,.58);}
+  .game.route-night .adventure-atmosphere{opacity:1;background:radial-gradient(circle at 12% 16%,#fff 0 1px,transparent 2px),radial-gradient(circle at 72% 24%,#fff6ba 0 1.5px,transparent 2.5px),radial-gradient(circle at 42% 41%,#fff 0 1px,transparent 2px),radial-gradient(circle at 86% 48%,#d9ecff 0 1px,transparent 2px);background-size:92px 92px,128px 128px,74px 74px,116px 116px;animation:route-stars 2.2s ease-in-out infinite alternate;}
+  .route-transition-banner{position:absolute;inset:0;z-index:18;display:grid;place-items:center;pointer-events:none;background:rgba(255,255,255,.08);opacity:0;transform:scale(1.04);transition:opacity .18s ease,transform .45s ease;}
+  .route-transition-banner strong{padding:14px 20px;border:2px solid rgba(255,255,255,.86);border-radius:999px;color:#fff;background:rgba(23,53,48,.76);box-shadow:0 7px 22px rgba(0,0,0,.22);font-size:clamp(20px,5vw,34px);font-weight:1000;text-shadow:0 2px 3px rgba(0,0,0,.35);}
+  .route-transition-banner.is-showing{opacity:1;transform:scale(1);}
+  @keyframes route-leaves{from{transform:translate(-8%,-14%) rotate(-4deg)}to{transform:translate(10%,105%) rotate(12deg)}}
+  @keyframes route-water{from{transform:translateY(-4px)}to{transform:translateY(5px)}}
+  @keyframes route-heat{from{filter:blur(0);transform:translateY(0)}to{filter:blur(1.5px);transform:translateY(-5px)}}
+  @keyframes route-stars{from{opacity:.58}to{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.game,.game .cloud,.adventure-atmosphere,.route-transition-banner{transition:none!important;animation:none!important}.adventure-atmosphere::before{animation:none!important}}
+`;
+document.head.appendChild(adventureThemeStyle);
+
+const adventureAtmosphere=document.createElement("div");
+adventureAtmosphere.className="adventure-atmosphere";
+adventureAtmosphere.setAttribute("aria-hidden","true");
+game.insertBefore(adventureAtmosphere,playArea);
+
+const adventureRouteBanner=document.createElement("div");
+adventureRouteBanner.className="route-transition-banner";
+adventureRouteBanner.setAttribute("aria-hidden","true");
+adventureRouteBanner.innerHTML="<strong></strong>";
+game.appendChild(adventureRouteBanner);
+let adventureRouteBannerTimer=0;
+
+function adventureApplyRouteTheme(key,announce=false){
+  game.classList.remove("route-forest","route-river","route-volcano","route-night");
+  if(ADVENTURE_ROUTES[key])game.classList.add(`route-${key}`);
+  if(!announce||!ADVENTURE_ROUTES[key])return;
+
+  const route=ADVENTURE_ROUTES[key];
+  clearTimeout(adventureRouteBannerTimer);
+  adventureRouteBanner.querySelector("strong").textContent=`${route.icon} ${route.name}へ！`;
+  adventureRouteBanner.classList.remove("is-showing");
+  void adventureRouteBanner.offsetWidth;
+  adventureRouteBanner.classList.add("is-showing");
+  adventureRouteBannerTimer=setTimeout(()=>adventureRouteBanner.classList.remove("is-showing"),720);
+}
+
 function adventureCurrentStars(){
   return Math.max(stageStars,typeof runStarsCollected==="number"?runStarsCollected:0);
 }
@@ -250,9 +309,10 @@ function adventureChooseRoute(key){
   adventureRouteIndex++;
   adventureRouteOverlay.hidden=true;
   const route=ADVENTURE_ROUTES[key];
+  adventureApplyRouteTheme(key,true);
   runResumeGame();
   renderStageHud();
-  setTimeout(()=>adventureShowPopup(`${route.icon} ${route.name}`),80);
+  setTimeout(()=>adventureShowPopup(`${route.icon} ${route.name}`),760);
 }
 
 function adventureResetRoute(){
@@ -261,6 +321,7 @@ function adventureResetRoute(){
   adventureRouteHistory=[];
   adventureStageClearAnnounced=false;
   adventureRouteOverlay.hidden=true;
+  adventureApplyRouteTheme("meadow",false);
 }
 
 function renderHome(){
@@ -316,6 +377,7 @@ function showHome(){
   stageActive=false;
   stageFinishing=false;
   stageCleared=false;
+  adventureApplyRouteTheme("meadow",false);
   homeScreen.hidden=false;
   renderHome();
 }
@@ -454,7 +516,7 @@ restartButton.addEventListener("click",()=>{
 },{capture:true});
 
 /*
- * stage-hazards.js loads after this file. Patch it on the next task so:
+ * stage-hazards.js loads after this file. Patch after page scripts finish so:
  * - falling hazards begin later and speed up gradually
  * - chestnuts unlock at 40 stars
  * - chestnuts are no longer cancelled by rocks / falling hazards
@@ -566,6 +628,58 @@ setTimeout(()=>{
       }
       const raw=hazard.getBoundingClientRect();
       if(raw.right<areaRect.left-70||raw.left>areaRect.right+70)hazard.remove();
+    });
+  };
+},0);
+
+/* life-mode.js replaces rock collision after this file loads. Replace it once more after all
+ * synchronous scripts finish, keeping its LIFE / shield behavior but making visual near-misses fairer. */
+setTimeout(()=>{
+  if(typeof updateRocks!=="function"||typeof lives==="undefined")return;
+
+  updateRocks=function(dt,currentTime){
+    // Roughly 15% smaller effective collision area than the previous rock check.
+    const playerHitbox=insetRect(player.getBoundingClientRect(),28,12);
+    const areaRect=playArea.getBoundingClientRect();
+
+    playArea.querySelectorAll(".rock").forEach(rock=>{
+      const direction=Number(rock.dataset.direction);
+      const speed=Number(rock.dataset.speed);
+      const nextX=Number(rock.dataset.x)+direction*speed*dt;
+      const rotation=Number(rock.dataset.rotation)+direction*90*dt;
+      rock.dataset.x=String(nextX);
+      rock.dataset.rotation=String(rotation);
+      rock.style.transform=`translateX(${nextX}px) rotate(${rotation}deg)`;
+
+      const rockRect=insetRect(rock.getBoundingClientRect(),7,5);
+      if(currentTime>=invincibleUntil&&rectanglesOverlap(playerHitbox,rockRect)){
+        if(shieldCharges>0){
+          shieldCharges--;
+          if(shieldCharges<=0)player.classList.remove("shield-active");
+          invincibleUntil=currentTime+300;
+          showShieldBlockPopup();
+          renderItemStatus(currentTime);
+          rock.remove();
+          return;
+        }
+
+        lives=Math.max(0,lives-1);
+        renderLives();
+        resetCombo();
+        showLifePopup("💔 -1","life-popup--damage");
+        invincibleUntil=currentTime+1000;
+        player.classList.add("is-hit");
+        setTimeout(()=>player.classList.remove("is-hit"),900);
+        rock.remove();
+
+        if(lives<=0){
+          setTimeout(()=>{if(isPlaying)endGame();},120);
+        }
+        return;
+      }
+
+      const rawRect=rock.getBoundingClientRect();
+      if(rawRect.right<areaRect.left-70||rawRect.left>areaRect.right+70)rock.remove();
     });
   };
 },0);
