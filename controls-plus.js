@@ -4,6 +4,10 @@ const JUMP_DIRECTION_MEMORY_MS=120;
 const JUMP_ASSIST_SPEED=135;
 const JUMP_ASSIST_MS=180;
 
+/* Cloud Browser用。通常URLとスマホ表示には影響させない。 */
+const touchControlsTestEnabled=new URLSearchParams(window.location.search).get("touchtest")==="1";
+if(touchControlsTestEnabled)controls.style.display="flex";
+
 let recentHorizontalDirection="front";
 let recentHorizontalAt=0;
 let jumpAssistDirection="front";
